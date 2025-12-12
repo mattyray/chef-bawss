@@ -8,12 +8,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5436:5432"
+      - "5437:5432"
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6383:6379"
+      - "6384:6379"
 
   backend:
     build: ./backend
@@ -21,7 +21,7 @@ services:
     volumes:
       - ./backend:/app
     ports:
-      - "8006:8000"
+      - "8007:8000"
     depends_on:
       - db
       - redis
