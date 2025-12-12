@@ -1,13 +1,9 @@
-from django.utils.deprecation import MiddlewareMixin
+class TenantMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-
-class TenantMiddleware(MiddlewareMixin):
-    def process_request(self, request):
+    def __call__(self, request):
+        # Initialize - will be populated after DRF auth
         request.organization = None
         request.membership = None
-        
-        if request.user.is_authenticated:
-            membership = request.user.memberships.filter(is_active=True).first()
-            if membership:
-                request.organization = membership.organization
-                request.membership = membership
+        return self.get_response(request)

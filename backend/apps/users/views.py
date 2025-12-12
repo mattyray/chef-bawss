@@ -2,9 +2,9 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from core.mixins import TenantMixin
 from .serializers import (
     RegisterSerializer, 
     UserSerializer, 
@@ -36,7 +36,7 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-class MeView(generics.RetrieveUpdateAPIView):
+class MeView(TenantMixin, generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = MeSerializer
     
@@ -44,7 +44,7 @@ class MeView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
-class ChangePasswordView(APIView):
+class ChangePasswordView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
