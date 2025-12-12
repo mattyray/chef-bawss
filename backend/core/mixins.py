@@ -1,15 +1,29 @@
 class TenantMixin:
     """
-    Mixin that sets organization/membership after DRF authentication.
-    Add this FIRST in your view's inheritance chain.
+    Mixin that sets organization/membership after DRF authentication
+    but before permission checks.
     """
     def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
+        # Standard DRF setup
+        self.format_kwarg = self.get_format_suffix(**kwargs)
+        neg = self.perform_content_negotiation(request)
+        request.accepted_renderer, request.accepted_media_type = neg
+        version, scheme = self.determine_version(request, *args, **kwargs)
+        request.version, request.versioning_scheme = version, scheme
+        
+        # Authenticate first
+        self.perform_authentication(request)
+        
+        # Set tenant AFTER auth, BEFORE permissions
         if request.user.is_authenticated:
             membership = request.user.memberships.filter(is_active=True).first()
             if membership:
                 request.organization = membership.organization
                 request.membership = membership
+        
+        # Now check permissions with tenant available
+        self.check_permissions(request)
+        self.check_throttles(request)
 
 
 class TenantQuerysetMixin(TenantMixin):
