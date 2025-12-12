@@ -1,0 +1,11 @@
+Django==5.2.1
+djangorestframework==3.16.0
+djangorestframework-simplejwt==5.4.0
+django-cors-headers==4.6.0
+django-ses==4.3.0
+celery[redis]==5.5.3
+redis==5.2.1
+psycopg[binary]==3.2.4
+python-dotenv==1.0.1
+gunicorn==23.0.0
+whitenoise==6.8.2
