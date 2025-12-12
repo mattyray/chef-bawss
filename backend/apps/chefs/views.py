@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from core.mixins import TenantMixin
 from core.permissions import IsAdmin
 from apps.organizations.models import OrganizationMembership
 from .models import ChefProfile
@@ -13,7 +14,7 @@ from .serializers import (
 )
 
 
-class ChefListView(generics.ListAPIView):
+class ChefListView(TenantMixin, generics.ListAPIView):
     serializer_class = ChefProfileSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
     
@@ -25,7 +26,7 @@ class ChefListView(generics.ListAPIView):
         ).select_related('membership__user')
 
 
-class ChefInviteView(generics.CreateAPIView):
+class ChefInviteView(TenantMixin, generics.CreateAPIView):
     serializer_class = ChefInviteSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
     
@@ -40,7 +41,7 @@ class ChefInviteView(generics.CreateAPIView):
         )
 
 
-class ChefDetailView(generics.RetrieveUpdateAPIView):
+class ChefDetailView(TenantMixin, generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def get_queryset(self):
@@ -60,7 +61,7 @@ class ChefDetailView(generics.RetrieveUpdateAPIView):
         return ChefProfileSerializer
 
 
-class ChefDeactivateView(APIView):
+class ChefDeactivateView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def post(self, request, pk):
@@ -80,7 +81,7 @@ class ChefDeactivateView(APIView):
             )
 
 
-class ChefActivateView(APIView):
+class ChefActivateView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def post(self, request, pk):
@@ -100,7 +101,7 @@ class ChefActivateView(APIView):
             )
 
 
-class ChefMeView(generics.RetrieveUpdateAPIView):
+class ChefMeView(TenantMixin, generics.RetrieveUpdateAPIView):
     serializer_class = ChefSelfSerializer
     permission_classes = [IsAuthenticated]
     

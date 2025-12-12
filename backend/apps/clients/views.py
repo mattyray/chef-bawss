@@ -1,8 +1,7 @@
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum
 from core.mixins import TenantQuerysetMixin
-from core.permissions import IsAdmin, IsAdminOrReadOnly
+from core.permissions import IsAdminOrReadOnly
 from .models import Client
 from .serializers import ClientSerializer, ClientDetailSerializer
 

@@ -2,9 +2,8 @@ from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q
-from core.mixins import TenantQuerysetMixin
-from core.permissions import IsAdmin, IsAdminOrReadOnly
+from core.mixins import TenantQuerysetMixin, TenantMixin
+from core.permissions import IsAdmin
 from .models import Event
 from .serializers import (
     EventListSerializer,
@@ -26,19 +25,22 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         
-        if self.request.membership.role == 'chef':
+        # Filter for chefs - only their assigned events
+        if self.request.membership and self.request.membership.role == 'chef':
             chef_profile = getattr(self.request.membership, 'chef_profile', None)
             if chef_profile:
                 qs = qs.filter(chef=chef_profile)
             else:
                 return qs.none()
         
+        # Status filter
         status_filter = self.request.query_params.get('status')
         if status_filter:
             qs = qs.filter(status=status_filter)
         
+        # Chef filter (admin only)
         chef_filter = self.request.query_params.get('chef_id')
-        if chef_filter and self.request.membership.role == 'admin':
+        if chef_filter and self.request.membership and self.request.membership.role == 'admin':
             qs = qs.filter(chef__membership__id=chef_filter)
         
         return qs.select_related('client', 'chef__membership__user')
@@ -46,7 +48,7 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return EventCreateUpdateSerializer
-        if self.request.membership.role == 'chef':
+        if self.request.membership and self.request.membership.role == 'chef':
             return EventChefViewSerializer
         return EventListSerializer
     
@@ -54,7 +56,7 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
         serializer.save(organization=self.request.organization)
     
     def create(self, request, *args, **kwargs):
-        if request.membership.role != 'admin':
+        if not request.membership or request.membership.role != 'admin':
             return Response(
                 {'detail': 'Only admins can create events.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -69,7 +71,7 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
     def get_queryset(self):
         qs = super().get_queryset()
         
-        if self.request.membership.role == 'chef':
+        if self.request.membership and self.request.membership.role == 'chef':
             chef_profile = getattr(self.request.membership, 'chef_profile', None)
             if chef_profile:
                 qs = qs.filter(chef=chef_profile)
@@ -80,15 +82,15 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
     
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
-            if self.request.membership.role == 'chef':
+            if self.request.membership and self.request.membership.role == 'chef':
                 return EventChefViewSerializer
             return EventCreateUpdateSerializer
-        if self.request.membership.role == 'chef':
+        if self.request.membership and self.request.membership.role == 'chef':
             return EventChefViewSerializer
         return EventDetailSerializer
     
     def update(self, request, *args, **kwargs):
-        if request.membership.role == 'chef':
+        if request.membership and request.membership.role == 'chef':
             allowed_fields = {'chef_notes'}
             if set(request.data.keys()) - allowed_fields:
                 return Response(
@@ -98,7 +100,7 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
         return super().update(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):
-        if request.membership.role != 'admin':
+        if not request.membership or request.membership.role != 'admin':
             return Response(
                 {'detail': 'Only admins can delete events.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -108,7 +110,7 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class EventCompleteView(APIView):
+class EventCompleteView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def post(self, request, pk):
@@ -128,7 +130,7 @@ class EventCompleteView(APIView):
             )
 
 
-class EventCancelView(APIView):
+class EventCancelView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def post(self, request, pk):
@@ -156,13 +158,14 @@ class EventCalendarView(TenantQuerysetMixin, generics.ListAPIView):
     def get_queryset(self):
         qs = super().get_queryset()
         
-        if self.request.membership.role == 'chef':
+        if self.request.membership and self.request.membership.role == 'chef':
             chef_profile = getattr(self.request.membership, 'chef_profile', None)
             if chef_profile:
                 qs = qs.filter(chef=chef_profile)
             else:
                 return qs.none()
         
+        # Date range filtering
         start = self.request.query_params.get('start')
         end = self.request.query_params.get('end')
         
@@ -171,8 +174,9 @@ class EventCalendarView(TenantQuerysetMixin, generics.ListAPIView):
         if end:
             qs = qs.filter(date__lte=end)
         
+        # Chef filter (admin only)
         chef_id = self.request.query_params.get('chef_id')
-        if chef_id and self.request.membership.role == 'admin':
+        if chef_id and self.request.membership and self.request.membership.role == 'admin':
             if chef_id == 'unassigned':
                 qs = qs.filter(chef__isnull=True)
             else:
