@@ -3,11 +3,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from core.mixins import TenantMixin
+from core.throttling import AuthRateThrottle
 from .serializers import (
-    RegisterSerializer, 
-    UserSerializer, 
+    RegisterSerializer,
+    UserSerializer,
     ChangePasswordSerializer,
     MeSerializer
 )
@@ -15,9 +17,15 @@ from .serializers import (
 User = get_user_model()
 
 
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    """Login endpoint with auth throttling to prevent brute force."""
+    throttle_classes = [AuthRateThrottle]
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
     serializer_class = RegisterSerializer
     
     def create(self, request, *args, **kwargs):

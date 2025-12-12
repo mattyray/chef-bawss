@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantMixin
 from core.permissions import IsAdmin
-from apps.organizations.models import OrganizationMembership
 from .models import ChefProfile
 from .serializers import (
     ChefProfileSerializer, 
@@ -53,7 +52,7 @@ class ChefDetailView(TenantMixin, generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         queryset = self.get_queryset()
-        return generics.get_object_or_404(queryset, membership__id=self.kwargs['pk'])
+        return generics.get_object_or_404(queryset, id=self.kwargs['pk'])
     
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
@@ -63,40 +62,38 @@ class ChefDetailView(TenantMixin, generics.RetrieveUpdateAPIView):
 
 class ChefDeactivateView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
-    
+
     def post(self, request, pk):
         try:
-            membership = OrganizationMembership.objects.get(
+            chef_profile = ChefProfile.objects.get(
                 id=pk,
-                organization=request.organization,
-                role='chef'
+                membership__organization=request.organization
             )
-            membership.is_active = False
-            membership.save()
+            chef_profile.membership.is_active = False
+            chef_profile.membership.save()
             return Response({'detail': 'Chef deactivated successfully.'})
-        except OrganizationMembership.DoesNotExist:
+        except ChefProfile.DoesNotExist:
             return Response(
-                {'detail': 'Chef not found.'}, 
+                {'detail': 'Chef not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )
 
 
 class ChefActivateView(TenantMixin, APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
-    
+
     def post(self, request, pk):
         try:
-            membership = OrganizationMembership.objects.get(
+            chef_profile = ChefProfile.objects.get(
                 id=pk,
-                organization=request.organization,
-                role='chef'
+                membership__organization=request.organization
             )
-            membership.is_active = True
-            membership.save()
+            chef_profile.membership.is_active = True
+            chef_profile.membership.save()
             return Response({'detail': 'Chef activated successfully.'})
-        except OrganizationMembership.DoesNotExist:
+        except ChefProfile.DoesNotExist:
             return Response(
-                {'detail': 'Chef not found.'}, 
+                {'detail': 'Chef not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )
 

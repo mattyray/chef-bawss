@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from apps.events.views import DashboardView, FinancesView, FinancesByChefView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -8,4 +9,7 @@ urlpatterns = [
     path('api/clients/', include('apps.clients.urls')),
     path('api/chefs/', include('apps.chefs.urls')),
     path('api/events/', include('apps.events.urls')),
+    path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('api/finances/', FinancesView.as_view(), name='finances'),
+    path('api/finances/by-chef/', FinancesByChefView.as_view(), name='finances_by_chef'),
 ]

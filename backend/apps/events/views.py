@@ -1,3 +1,5 @@
+from django.db.models import Sum, Count
+from django.utils import timezone
 from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -181,5 +183,304 @@ class EventCalendarView(TenantQuerysetMixin, generics.ListAPIView):
                 qs = qs.filter(chef__isnull=True)
             else:
                 qs = qs.filter(chef__membership__id=chef_id)
-        
+
         return qs.select_related('client', 'chef__membership__user')
+
+
+class DashboardView(TenantMixin, APIView):
+    """
+    Dashboard API - returns role-aware stats and upcoming events.
+
+    Admin sees: revenue, paid_out, profit, event_count, upcoming_events, recent_completed
+    Chef sees: earnings_this_month, earnings_this_year, upcoming_events
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.organization:
+            return Response({'detail': 'No organization found.'}, status=400)
+
+        today = timezone.now().date()
+        current_month_start = today.replace(day=1)
+        current_year_start = today.replace(month=1, day=1)
+
+        if request.membership.role == 'admin':
+            return self._admin_dashboard(request, today, current_month_start)
+        else:
+            return self._chef_dashboard(request, today, current_month_start, current_year_start)
+
+    def _admin_dashboard(self, request, today, current_month_start):
+        base_qs = Event.objects.filter(
+            organization=request.organization,
+            is_deleted=False
+        )
+
+        # This month's completed events stats
+        month_completed = base_qs.filter(
+            status='completed',
+            date__gte=current_month_start,
+            date__lte=today
+        ).aggregate(
+            revenue=Sum('client_pay'),
+            paid_out=Sum('chef_pay'),
+            event_count=Count('id')
+        )
+
+        revenue = month_completed['revenue'] or 0
+        paid_out = month_completed['paid_out'] or 0
+        profit = revenue - paid_out
+        event_count = month_completed['event_count'] or 0
+
+        # Upcoming events (next 5)
+        upcoming_events = base_qs.filter(
+            status='upcoming',
+            date__gte=today
+        ).select_related('client', 'chef__membership__user').order_by('date', 'start_time')[:5]
+
+        upcoming_data = [
+            {
+                'id': e.id,
+                'display_name': e.display_name,
+                'date': e.date,
+                'start_time': e.start_time,
+                'client_name': e.client.name,
+                'chef_name': e.chef.user.full_name if e.chef else None,
+                'chef_color': e.chef.calendar_color if e.chef else '#9E9E9E',
+                'guest_count': e.guest_count,
+                'client_pay': str(e.client_pay),
+            }
+            for e in upcoming_events
+        ]
+
+        # Recently completed (last 5)
+        recent_completed = base_qs.filter(
+            status='completed'
+        ).select_related('client', 'chef__membership__user').order_by('-date')[:5]
+
+        recent_data = [
+            {
+                'id': e.id,
+                'display_name': e.display_name,
+                'date': e.date,
+                'client_name': e.client.name,
+                'chef_name': e.chef.user.full_name if e.chef else None,
+                'client_pay': str(e.client_pay),
+            }
+            for e in recent_completed
+        ]
+
+        return Response({
+            'stats': {
+                'revenue': str(revenue),
+                'paid_out': str(paid_out),
+                'profit': str(profit),
+                'event_count': event_count,
+            },
+            'upcoming_events': upcoming_data,
+            'recent_completed': recent_data,
+        })
+
+    def _chef_dashboard(self, request, today, current_month_start, current_year_start):
+        chef_profile = getattr(request.membership, 'chef_profile', None)
+        if not chef_profile:
+            return Response({'detail': 'Chef profile not found.'}, status=404)
+
+        base_qs = Event.objects.filter(
+            organization=request.organization,
+            chef=chef_profile,
+            is_deleted=False
+        )
+
+        # This month's earnings (completed events)
+        month_earnings = base_qs.filter(
+            status='completed',
+            date__gte=current_month_start,
+            date__lte=today
+        ).aggregate(total=Sum('chef_pay'))['total'] or 0
+
+        # This year's earnings (completed events)
+        year_earnings = base_qs.filter(
+            status='completed',
+            date__gte=current_year_start,
+            date__lte=today
+        ).aggregate(total=Sum('chef_pay'))['total'] or 0
+
+        # Upcoming events
+        upcoming_events = base_qs.filter(
+            status='upcoming',
+            date__gte=today
+        ).select_related('client').order_by('date', 'start_time')[:5]
+
+        upcoming_data = [
+            {
+                'id': e.id,
+                'display_name': e.display_name,
+                'date': e.date,
+                'start_time': e.start_time,
+                'end_time': e.end_time,
+                'client_name': e.client.name,
+                'location': e.location,
+                'guest_count': e.guest_count,
+                'chef_pay': str(e.chef_pay) if e.chef_pay else None,
+            }
+            for e in upcoming_events
+        ]
+
+        return Response({
+            'earnings': {
+                'this_month': str(month_earnings),
+                'this_year': str(year_earnings),
+            },
+            'upcoming_events': upcoming_data,
+        })
+
+
+class FinancesView(TenantMixin, APIView):
+    """
+    Finances API - returns financial summary with date filtering.
+    Admin only.
+
+    Query params:
+    - start_date: YYYY-MM-DD (defaults to first day of current month)
+    - end_date: YYYY-MM-DD (defaults to today)
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        if not request.organization:
+            return Response({'detail': 'No organization found.'}, status=400)
+
+        today = timezone.now().date()
+
+        # Parse date filters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if start_date:
+            try:
+                from datetime import datetime
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'detail': 'Invalid start_date format. Use YYYY-MM-DD.'}, status=400)
+        else:
+            start_date = today.replace(day=1)
+
+        if end_date:
+            try:
+                from datetime import datetime
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'detail': 'Invalid end_date format. Use YYYY-MM-DD.'}, status=400)
+        else:
+            end_date = today
+
+        # Get completed events in date range
+        completed_events = Event.objects.filter(
+            organization=request.organization,
+            is_deleted=False,
+            status='completed',
+            date__gte=start_date,
+            date__lte=end_date
+        )
+
+        # Aggregate totals
+        totals = completed_events.aggregate(
+            revenue=Sum('client_pay'),
+            paid_out=Sum('chef_pay'),
+            event_count=Count('id')
+        )
+
+        revenue = totals['revenue'] or 0
+        paid_out = totals['paid_out'] or 0
+        profit = revenue - paid_out
+        event_count = totals['event_count'] or 0
+
+        return Response({
+            'period': {
+                'start_date': str(start_date),
+                'end_date': str(end_date),
+            },
+            'summary': {
+                'revenue': str(revenue),
+                'paid_out': str(paid_out),
+                'profit': str(profit),
+                'event_count': event_count,
+            }
+        })
+
+
+class FinancesByChefView(TenantMixin, APIView):
+    """
+    Finances by chef breakdown - returns earnings per chef.
+    Admin only.
+
+    Query params:
+    - start_date: YYYY-MM-DD (defaults to first day of current month)
+    - end_date: YYYY-MM-DD (defaults to today)
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        if not request.organization:
+            return Response({'detail': 'No organization found.'}, status=400)
+
+        today = timezone.now().date()
+
+        # Parse date filters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if start_date:
+            try:
+                from datetime import datetime
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'detail': 'Invalid start_date format. Use YYYY-MM-DD.'}, status=400)
+        else:
+            start_date = today.replace(day=1)
+
+        if end_date:
+            try:
+                from datetime import datetime
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'detail': 'Invalid end_date format. Use YYYY-MM-DD.'}, status=400)
+        else:
+            end_date = today
+
+        # Get completed events grouped by chef
+        chef_breakdown = Event.objects.filter(
+            organization=request.organization,
+            is_deleted=False,
+            status='completed',
+            date__gte=start_date,
+            date__lte=end_date,
+            chef__isnull=False
+        ).values(
+            'chef__id',
+            'chef__membership__user__first_name',
+            'chef__membership__user__last_name',
+            'chef__calendar_color'
+        ).annotate(
+            total_paid=Sum('chef_pay'),
+            event_count=Count('id')
+        ).order_by('-total_paid')
+
+        breakdown_data = [
+            {
+                'chef_id': item['chef__id'],
+                'chef_name': f"{item['chef__membership__user__first_name']} {item['chef__membership__user__last_name']}",
+                'chef_color': item['chef__calendar_color'],
+                'total_paid': str(item['total_paid'] or 0),
+                'event_count': item['event_count'],
+            }
+            for item in chef_breakdown
+        ]
+
+        return Response({
+            'period': {
+                'start_date': str(start_date),
+                'end_date': str(end_date),
+            },
+            'by_chef': breakdown_data,
+        })
