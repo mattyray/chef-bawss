@@ -59,6 +59,10 @@ export default function CalendarPage() {
     return events.filter((event) => event.start.startsWith(dateStr));
   };
 
+  const getDateString = (day: number) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -162,13 +166,14 @@ export default function CalendarPage() {
                     </div>
                     <div className="space-y-1">
                       {dayEvents.slice(0, 3).map((event) => (
-                        <div
+                        <Link
                           key={event.id}
-                          className={`px-2 py-1 text-xs text-white rounded truncate ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
+                          href={`/events/${event.id}`}
+                          className={`block px-2 py-1 text-xs text-white rounded truncate hover:opacity-80 ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
                           title={`${event.title} - ${event.extendedProps.client_name}`}
                         >
                           {event.start?.slice(11, 16)} {event.title}
-                        </div>
+                        </Link>
                       ))}
                       {dayEvents.length > 3 && (
                         <div className="px-2 py-1 text-xs text-gray-500">
