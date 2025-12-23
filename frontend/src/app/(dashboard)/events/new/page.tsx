@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Client, Chef } from '@/types';
@@ -25,6 +25,7 @@ function to24Hour(hour: string, minute: string, period: string): string {
 
 export default function NewEventPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [clients, setClients] = useState<Client[]>([]);
@@ -35,7 +36,7 @@ export default function NewEventPage() {
     client: '',
     chef: '',
     display_name: '',
-    date: '',
+    date: searchParams.get('date') || '',
     startHour: '',
     startMinute: '00',
     startPeriod: 'PM',

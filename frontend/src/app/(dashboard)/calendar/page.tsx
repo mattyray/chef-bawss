@@ -161,14 +161,23 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={day}
-                    className={`min-h-[120px] border-b border-r border-gray-200 p-2 ${
+                    className={`min-h-[120px] border-b border-r border-gray-200 p-2 group ${
                       isToday(day) ? 'bg-blue-50' : ''
                     }`}
                   >
-                    <div className={`text-sm font-medium mb-1 ${
-                      isToday(day) ? 'text-blue-600' : 'text-gray-900'
-                    }`}>
-                      {day}
+                    <div className="flex justify-between items-start">
+                      <div className={`text-sm font-medium ${
+                        isToday(day) ? 'text-blue-600' : 'text-gray-900'
+                      }`}>
+                        {day}
+                      </div>
+                      <Link
+                        href={`/events/new?date=${getDateString(day)}`}
+                        className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                        title="Add event"
+                      >
+                        +
+                      </Link>
                     </div>
                     <div className="space-y-1">
                       {dayEvents.slice(0, 3).map((event) => (
