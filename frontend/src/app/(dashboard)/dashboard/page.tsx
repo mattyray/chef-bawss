@@ -18,30 +18,32 @@ function StatCard({ title, value, subtitle }: { title: string; value: string; su
 
 function EventCard({ event }: { event: DashboardEvent }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-medium text-gray-900">{event.display_name}</h3>
-          <p className="text-sm text-gray-500">{event.client_name}</p>
+    <Link href={`/events/${event.id}`} className="block">
+      <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium text-gray-900">{event.display_name}</h3>
+            <p className="text-sm text-gray-500">{event.client_name}</p>
+          </div>
+          {event.chef_color && (
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: event.chef_color }}
+              title={event.chef_name || 'No chef assigned'}
+            />
+          )}
         </div>
-        {event.chef_color && (
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: event.chef_color }}
-            title={event.chef_name || 'No chef assigned'}
-          />
+        <div className="mt-2 text-sm text-gray-500">
+          <p>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+          {event.start_time && <p>{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</p>}
+        </div>
+        {event.client_pay && (
+          <p className="mt-2 text-sm font-medium text-gray-900">
+            ${Number(event.client_pay).toLocaleString()}
+          </p>
         )}
       </div>
-      <div className="mt-2 text-sm text-gray-500">
-        <p>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-        {event.start_time && <p>{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</p>}
-      </div>
-      {event.client_pay && (
-        <p className="mt-2 text-sm font-medium text-gray-900">
-          ${Number(event.client_pay).toLocaleString()}
-        </p>
-      )}
-    </div>
+    </Link>
   );
 }
 
