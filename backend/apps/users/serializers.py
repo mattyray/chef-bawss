@@ -86,3 +86,60 @@ class MeSerializer(serializers.ModelSerializer):
         if request and request.organization:
             return request.organization.id
         return None
+
+
+class AcceptInviteSerializer(serializers.Serializer):
+    """Validates invitation token and sets user password."""
+    token = serializers.CharField()
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    def validate_token(self, value):
+        try:
+            invitation = InvitationToken.objects.select_related('user').get(token=value)
+        except InvitationToken.DoesNotExist:
+            raise serializers.ValidationError('Invalid invitation token.')
+
+        if not invitation.is_valid:
+            raise serializers.ValidationError('This invitation has expired or already been used.')
+
+        self.invitation = invitation
+        return value
+
+    def save(self):
+        user = self.invitation.user
+        user.set_password(self.validated_data['password'])
+        user.is_email_verified = True
+        user.save()
+
+        self.invitation.mark_used()
+        return user
+
+
+class InviteInfoSerializer(serializers.Serializer):
+    """Returns info about an invitation for the accept-invite page."""
+    token = serializers.CharField()
+
+    def validate_token(self, value):
+        try:
+            invitation = InvitationToken.objects.select_related('user').get(token=value)
+        except InvitationToken.DoesNotExist:
+            raise serializers.ValidationError('Invalid invitation token.')
+
+        if not invitation.is_valid:
+            raise serializers.ValidationError('This invitation has expired or already been used.')
+
+        self.invitation = invitation
+        return value
+
+    def get_info(self):
+        user = self.invitation.user
+        # Get the organization from the user's chef membership
+        membership = user.memberships.filter(role='chef').first()
+        org_name = membership.organization.name if membership else None
+
+        return {
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'organization_name': org_name,
+        }

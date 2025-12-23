@@ -11,7 +11,9 @@ from .serializers import (
     RegisterSerializer,
     UserSerializer,
     ChangePasswordSerializer,
-    MeSerializer
+    MeSerializer,
+    AcceptInviteSerializer,
+    InviteInfoSerializer
 )
 
 User = get_user_model()
@@ -67,7 +69,7 @@ class ChangePasswordView(TenantMixin, APIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         try:
             refresh_token = request.data.get('refresh')
@@ -76,3 +78,45 @@ class LogoutView(APIView):
             return Response({'detail': 'Successfully logged out.'})
         except Exception:
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InviteInfoView(APIView):
+    """Get info about an invitation token (for the accept-invite page)."""
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+
+    def get(self, request):
+        token = request.query_params.get('token')
+        if not token:
+            return Response(
+                {'detail': 'Token is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = InviteInfoSerializer(data={'token': token})
+        if serializer.is_valid():
+            return Response(serializer.get_info())
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AcceptInviteView(APIView):
+    """Accept an invitation and set password."""
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = AcceptInviteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Generate tokens so they're logged in immediately
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'detail': 'Account activated successfully.',
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        })

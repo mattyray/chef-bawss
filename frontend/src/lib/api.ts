@@ -162,6 +162,31 @@ class ApiClient {
     return this.request<import('@/types').User>('/api/auth/me/');
   }
 
+  async getInviteInfo(token: string) {
+    return this.request<{
+      email: string;
+      first_name: string;
+      last_name: string;
+      organization_name: string;
+    }>(`/api/auth/invite-info/?token=${encodeURIComponent(token)}`, {
+      skipAuth: true,
+    });
+  }
+
+  async acceptInvite(token: string, password: string) {
+    const response = await this.request<{
+      detail: string;
+      user: import('@/types').User;
+      tokens: { access: string; refresh: string };
+    }>('/api/auth/accept-invite/', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+      skipAuth: true,
+    });
+    this.setTokens(response.tokens.access, response.tokens.refresh);
+    return response;
+  }
+
   // Clients
   async getClients() {
     return this.request<import('@/types').Client[]>('/api/clients/');

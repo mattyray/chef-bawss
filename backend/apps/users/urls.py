@@ -5,7 +5,9 @@ from .views import (
     ThrottledTokenObtainPairView,
     MeView,
     ChangePasswordView,
-    LogoutView
+    LogoutView,
+    InviteInfoView,
+    AcceptInviteView
 )
 
 urlpatterns = [
@@ -15,4 +17,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('me/', MeView.as_view(), name='me'),
     path('me/change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('invite-info/', InviteInfoView.as_view(), name='invite_info'),
+    path('accept-invite/', AcceptInviteView.as_view(), name='accept_invite'),
 ]
