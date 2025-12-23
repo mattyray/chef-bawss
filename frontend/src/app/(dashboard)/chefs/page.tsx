@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { formatPhoneNumber } from '@/lib/utils';
 import { Chef } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
@@ -158,7 +159,7 @@ export default function ChefsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{chef.email}</div>
                       {chef.phone && (
-                        <div className="text-sm text-gray-500">{chef.phone}</div>
+                        <div className="text-sm text-gray-500">{formatPhoneNumber(chef.phone)}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -253,7 +254,7 @@ export default function ChefsPage() {
                     type="tel"
                     id="phone"
                     value={inviteForm.phone}
-                    onChange={(e) => setInviteForm({ ...inviteForm, phone: e.target.value })}
+                    onChange={(e) => setInviteForm({ ...inviteForm, phone: formatPhoneNumber(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="(555) 123-4567"
                   />
