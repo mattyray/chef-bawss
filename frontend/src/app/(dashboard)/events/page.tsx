@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { Event } from '@/types';
@@ -17,6 +17,8 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -33,6 +35,19 @@ export default function EventsPage() {
 
     fetchEvents();
   }, []);
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      const matchesSearch = search === '' ||
+        event.display_name.toLowerCase().includes(search.toLowerCase()) ||
+        event.client_name.toLowerCase().includes(search.toLowerCase()) ||
+        (event.chef_name && event.chef_name.toLowerCase().includes(search.toLowerCase()));
+
+      const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [events, search, statusFilter]);
 
   if (loading) {
     return (
@@ -52,7 +67,7 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {isAdmin ? 'Events' : 'My Events'}
@@ -64,17 +79,42 @@ export default function EventsPage() {
         {isAdmin && (
           <Link
             href="/events/new"
-            className="px-3 py-2 text-sm sm:px-4 sm:text-base bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-3 py-2 text-sm sm:px-4 sm:text-base bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors self-start sm:self-auto"
           >
             + New Event
           </Link>
         )}
       </div>
 
-      {events.length === 0 ? (
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search events, clients, or chefs..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white"
+        >
+          <option value="all">All Status</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      {filteredEvents.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500">No events found</p>
-          {isAdmin && (
+          <p className="text-gray-500">
+            {events.length === 0 ? 'No events found' : 'No events match your search'}
+          </p>
+          {events.length === 0 && isAdmin && (
             <Link
               href="/events/new"
               className="mt-4 inline-block text-blue-600 hover:text-blue-500"
@@ -82,12 +122,20 @@ export default function EventsPage() {
               Create your first event
             </Link>
           )}
+          {events.length > 0 && (
+            <button
+              onClick={() => { setSearch(''); setStatusFilter('all'); }}
+              className="mt-4 text-blue-600 hover:text-blue-500"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <>
           {/* Mobile card view */}
           <div className="sm:hidden space-y-3">
-            {events.map((event) => (
+            {filteredEvents.map((event) => (
               <Link key={event.id} href={isAdmin ? `/events/${event.id}` : `/events/${event.id}/chef-view`} className="block">
                 <div className="bg-white shadow rounded-lg p-4">
                   <div className="flex justify-between items-start">
@@ -152,7 +200,7 @@ export default function EventsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {events.map((event) => (
+                {filteredEvents.map((event) => (
                   <tr key={event.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{event.display_name}</div>

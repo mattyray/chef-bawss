@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '@/lib/api';
 import { formatPhoneNumber } from '@/lib/utils';
 import { Chef } from '@/types';
@@ -10,6 +10,8 @@ export default function ChefsPage() {
   const [chefs, setChefs] = useState<Chef[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     email: '',
@@ -34,6 +36,22 @@ export default function ChefsPage() {
   useEffect(() => {
     fetchChefs();
   }, []);
+
+  const filteredChefs = useMemo(() => {
+    return chefs.filter((chef) => {
+      const matchesSearch = search === '' ||
+        chef.first_name.toLowerCase().includes(search.toLowerCase()) ||
+        chef.last_name.toLowerCase().includes(search.toLowerCase()) ||
+        chef.email.toLowerCase().includes(search.toLowerCase()) ||
+        (chef.phone && chef.phone.includes(search));
+
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && chef.is_active) ||
+        (statusFilter === 'inactive' && !chef.is_active);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [chefs, search, statusFilter]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();

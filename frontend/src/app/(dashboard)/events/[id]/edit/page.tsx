@@ -66,6 +66,7 @@ export default function EditEventPage() {
     deposit_received: false,
     payment_received: false,
     status: 'upcoming',
+    allergies: '',
     menu_notes: '',
   });
 
@@ -102,6 +103,7 @@ export default function EditEventPage() {
           deposit_received: eventData.deposit_received || false,
           payment_received: eventData.payment_received || false,
           status: eventData.status,
+          allergies: eventData.allergies || '',
           menu_notes: eventData.menu_notes || '',
         });
 
@@ -144,6 +146,7 @@ export default function EditEventPage() {
         deposit_received: form.deposit_received,
         payment_received: form.payment_received,
         status: form.status as 'upcoming' | 'completed' | 'cancelled',
+        allergies: form.allergies,
         menu_notes: form.menu_notes,
       });
       router.push(`/events/${eventId}`);
@@ -457,6 +460,20 @@ export default function EditEventPage() {
             </div>
 
             <div>
+              <label htmlFor="allergies" className="block text-sm font-medium text-gray-700 mb-1">
+                Allergies / Dietary Restrictions
+              </label>
+              <input
+                type="text"
+                id="allergies"
+                value={form.allergies}
+                onChange={(e) => setForm({ ...form, allergies: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Nut allergy, Gluten-free, Vegetarian..."
+              />
+            </div>
+
+            <div>
               <label htmlFor="menu_notes" className="block text-sm font-medium text-gray-700 mb-1">
                 Menu / Notes
               </label>
@@ -466,7 +483,7 @@ export default function EditEventPage() {
                 value={form.menu_notes}
                 onChange={(e) => setForm({ ...form, menu_notes: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Menu details, special requests, allergies..."
+                placeholder="Menu details, special requests..."
               />
             </div>
 
