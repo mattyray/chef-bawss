@@ -7,11 +7,9 @@ import { Event } from '@/types';
 import Link from 'next/link';
 
 const statusColors: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-800',
-  confirmed: 'bg-green-100 text-green-800',
-  completed: 'bg-gray-100 text-gray-800',
+  upcoming: 'bg-blue-100 text-blue-800',
+  completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
-  paid: 'bg-purple-100 text-purple-800',
 };
 
 export default function EventsPage() {

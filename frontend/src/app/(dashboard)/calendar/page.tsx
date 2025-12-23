@@ -5,11 +5,9 @@ import { api } from '@/lib/api';
 import { CalendarEvent } from '@/types';
 
 const statusColors: Record<string, string> = {
-  scheduled: 'bg-blue-500',
-  confirmed: 'bg-green-500',
-  completed: 'bg-gray-500',
+  upcoming: 'bg-blue-500',
+  completed: 'bg-green-500',
   cancelled: 'bg-red-500',
-  paid: 'bg-purple-500',
 };
 
 export default function CalendarPage() {
