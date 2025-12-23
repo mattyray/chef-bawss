@@ -85,13 +85,16 @@ export default function NewEventPage() {
     setLoading(true);
 
     try {
+      const start_time = form.startHour ? to24Hour(form.startHour, form.startMinute, form.startPeriod) : '';
+      const end_time = form.endHour ? to24Hour(form.endHour, form.endMinute, form.endPeriod) : '';
+
       await api.createEvent({
         client: Number(form.client),
         chef: form.chef ? Number(form.chef) : undefined,
         display_name: form.display_name,
         date: form.date,
-        start_time: form.start_time,
-        end_time: form.end_time,
+        start_time,
+        end_time: end_time || undefined,
         location: form.location,
         guest_count: form.guest_count ? Number(form.guest_count) : undefined,
         client_pay: form.client_pay ? form.client_pay : undefined,
