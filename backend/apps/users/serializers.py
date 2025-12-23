@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from apps.organizations.models import Organization, OrganizationMembership
+from .models import InvitationToken
 
 User = get_user_model()
 

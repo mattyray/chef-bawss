@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from apps.organizations.models import OrganizationMembership
+from apps.users.models import InvitationToken
+from core.email import send_chef_invitation_email
 from .models import ChefProfile
 
 User = get_user_model()
@@ -98,7 +100,11 @@ class ChefInviteSerializer(serializers.Serializer):
             default_pay_rate=validated_data.get('default_pay_rate'),
             notes=validated_data.get('notes', '')
         )
-        
+
+        # Create invitation token and send email
+        invitation = InvitationToken.objects.create(user=user)
+        send_chef_invitation_email(user, organization, invitation.token)
+
         return chef_profile
 
 
