@@ -85,42 +85,45 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - stacks on mobile */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-          <p className="text-gray-500">View your scheduled events</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Calendar</h1>
+          <p className="text-sm text-gray-500 hidden sm:block">View your scheduled events</p>
         </div>
-        <div className="flex items-center gap-4">
+
+        {/* Controls row */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
           <Link
             href="/events/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="hidden sm:block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             + New Event
           </Link>
           <button
             onClick={goToToday}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
+            className="px-2 py-1 text-xs sm:text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
           >
             Today
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={previousMonth}
-              className="p-2 hover:bg-gray-100 rounded-md"
+              className="p-1 sm:p-2 hover:bg-gray-100 rounded-md"
             >
-              <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-lg font-semibold text-gray-900 min-w-[180px] text-center">
+            <span className="text-sm sm:text-lg font-semibold text-gray-900 min-w-[120px] sm:min-w-[180px] text-center">
               {monthNames[month]} {year}
             </span>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-gray-100 rounded-md"
+              className="p-1 sm:p-2 hover:bg-gray-100 rounded-md"
             >
-              <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -139,9 +142,11 @@ export default function CalendarPage() {
               {dayNames.map((day) => (
                 <div
                   key={day}
-                  className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase"
+                  className="px-1 sm:px-2 py-2 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase"
                 >
-                  {day}
+                  {/* Show single letter on mobile */}
+                  <span className="sm:hidden">{day[0]}</span>
+                  <span className="hidden sm:inline">{day}</span>
                 </div>
               ))}
             </div>
@@ -150,7 +155,7 @@ export default function CalendarPage() {
               {Array.from({ length: firstDayOfMonth }).map((_, index) => (
                 <div
                   key={`empty-${index}`}
-                  className="min-h-[120px] border-b border-r border-gray-200 bg-gray-50"
+                  className="min-h-[60px] sm:min-h-[120px] border-b border-r border-gray-200 bg-gray-50"
                 />
               ))}
 
@@ -161,40 +166,58 @@ export default function CalendarPage() {
                 return (
                   <div
                     key={day}
-                    className={`min-h-[120px] border-b border-r border-gray-200 p-2 group ${
+                    className={`min-h-[60px] sm:min-h-[120px] border-b border-r border-gray-200 p-1 sm:p-2 group ${
                       isToday(day) ? 'bg-blue-50' : ''
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <div className={`text-sm font-medium ${
+                      <div className={`text-xs sm:text-sm font-medium ${
                         isToday(day) ? 'text-blue-600' : 'text-gray-900'
                       }`}>
                         {day}
                       </div>
                       <Link
                         href={`/events/new?date=${getDateString(day)}`}
-                        className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                        className="hidden sm:flex opacity-0 group-hover:opacity-100 w-5 h-5 items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-opacity"
                         title="Add event"
                       >
                         +
                       </Link>
                     </div>
-                    <div className="space-y-1">
-                      {dayEvents.slice(0, 3).map((event) => (
-                        <Link
-                          key={event.id}
-                          href={`/events/${event.id}`}
-                          className={`block px-2 py-1 text-xs text-white rounded truncate hover:opacity-80 ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
-                          title={`${event.title} - ${event.extendedProps.client_name}`}
-                        >
-                          {event.start?.slice(11, 16)} {event.title}
-                        </Link>
-                      ))}
-                      {dayEvents.length > 3 && (
-                        <div className="px-2 py-1 text-xs text-gray-500">
-                          +{dayEvents.length - 3} more
-                        </div>
-                      )}
+                    <div className="space-y-0.5 sm:space-y-1 mt-0.5 sm:mt-1">
+                      {/* On mobile: show dot indicators, on desktop: show event details */}
+                      {/* Mobile view - just colored dots */}
+                      <div className="sm:hidden flex flex-wrap gap-0.5">
+                        {dayEvents.slice(0, 4).map((event) => (
+                          <Link
+                            key={event.id}
+                            href={`/events/${event.id}`}
+                            className={`w-2 h-2 rounded-full ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
+                            title={`${event.title} - ${event.extendedProps.client_name}`}
+                          />
+                        ))}
+                        {dayEvents.length > 4 && (
+                          <span className="text-[8px] text-gray-500">+{dayEvents.length - 4}</span>
+                        )}
+                      </div>
+                      {/* Desktop view - full event cards */}
+                      <div className="hidden sm:block space-y-1">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <Link
+                            key={event.id}
+                            href={`/events/${event.id}`}
+                            className={`block px-2 py-1 text-xs text-white rounded truncate hover:opacity-80 ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
+                            title={`${event.title} - ${event.extendedProps.client_name}`}
+                          >
+                            {event.start?.slice(11, 16)} {event.title}
+                          </Link>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <div className="px-2 py-1 text-xs text-gray-500">
+                            +{dayEvents.length - 3} more
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

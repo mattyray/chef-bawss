@@ -168,8 +168,8 @@ export default function EditEventPage() {
           </Link>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Event</h1>
+        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Edit Event</h1>
 
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
@@ -234,21 +234,21 @@ export default function EditEventPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date *
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  required
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                Date *
+              </label>
+              <input
+                type="date"
+                id="date"
+                required
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Time *
@@ -258,7 +258,7 @@ export default function EditEventPage() {
                     required
                     value={form.startHour}
                     onChange={(e) => setForm({ ...form, startHour: e.target.value })}
-                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="">--</option>
                     {hours.map((h) => (
@@ -268,7 +268,7 @@ export default function EditEventPage() {
                   <select
                     value={form.startMinute}
                     onChange={(e) => setForm({ ...form, startMinute: e.target.value })}
-                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     {minutes.map((m) => (
                       <option key={m} value={m}>{m}</option>
@@ -277,7 +277,7 @@ export default function EditEventPage() {
                   <select
                     value={form.startPeriod}
                     onChange={(e) => setForm({ ...form, startPeriod: e.target.value })}
-                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     {periods.map((p) => (
                       <option key={p} value={p}>{p}</option>
@@ -294,7 +294,7 @@ export default function EditEventPage() {
                   <select
                     value={form.endHour}
                     onChange={(e) => setForm({ ...form, endHour: e.target.value })}
-                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     <option value="">--</option>
                     {hours.map((h) => (
@@ -304,7 +304,7 @@ export default function EditEventPage() {
                   <select
                     value={form.endMinute}
                     onChange={(e) => setForm({ ...form, endMinute: e.target.value })}
-                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     {minutes.map((m) => (
                       <option key={m} value={m}>{m}</option>
@@ -313,7 +313,7 @@ export default function EditEventPage() {
                   <select
                     value={form.endPeriod}
                     onChange={(e) => setForm({ ...form, endPeriod: e.target.value })}
-                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   >
                     {periods.map((p) => (
                       <option key={p} value={p}>{p}</option>
@@ -337,10 +337,10 @@ export default function EditEventPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <div>
                 <label htmlFor="guest_count" className="block text-sm font-medium text-gray-700 mb-1">
-                  Guest Count
+                  Guests
                 </label>
                 <input
                   type="number"
@@ -348,14 +348,14 @@ export default function EditEventPage() {
                   min="1"
                   value={form.guest_count}
                   onChange={(e) => setForm({ ...form, guest_count: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                   placeholder="10"
                 />
               </div>
 
               <div>
                 <label htmlFor="client_pay" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Pays ($)
+                  Client $
                 </label>
                 <input
                   type="number"
@@ -364,14 +364,14 @@ export default function EditEventPage() {
                   step="0.01"
                   value={form.client_pay}
                   onChange={(e) => setForm({ ...form, client_pay: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="500.00"
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="500"
                 />
               </div>
 
               <div>
                 <label htmlFor="chef_pay" className="block text-sm font-medium text-gray-700 mb-1">
-                  Chef Pay ($)
+                  Chef $
                 </label>
                 <input
                   type="number"
@@ -380,8 +380,8 @@ export default function EditEventPage() {
                   step="0.01"
                   value={form.chef_pay}
                   onChange={(e) => setForm({ ...form, chef_pay: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="200.00"
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="200"
                 />
               </div>
             </div>

@@ -97,19 +97,19 @@ export default function ClientDetailPage() {
         </div>
 
         <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{client.name}</h1>
             <div className="flex gap-2">
               <Link
                 href={`/clients/${clientId}/edit`}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-3 sm:px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Edit
               </Link>
               <button
                 onClick={handleDelete}
                 disabled={deleting || events.length > 0}
-                className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
+                className="px-3 sm:px-4 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
                 title={events.length > 0 ? 'Cannot delete client with events' : ''}
               >
                 {deleting ? 'Deleting...' : 'Delete'}
@@ -117,7 +117,7 @@ export default function ClientDetailPage() {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Email</h3>
@@ -192,51 +192,80 @@ export default function ClientDetailPage() {
               No events for this client yet
             </div>
           ) : (
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Event
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {events.map((event) => (
-                    <tr key={event.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/events/${event.id}`}
-                          className="text-blue-600 hover:text-blue-500 font-medium"
-                        >
-                          {event.display_name}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {new Date(event.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[event.status]}`}>
-                          {event.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        ${Number(event.client_pay).toLocaleString()}
-                      </td>
+            <>
+              {/* Mobile card view */}
+              <div className="sm:hidden space-y-3">
+                {events.map((event) => (
+                  <Link key={event.id} href={`/events/${event.id}`} className="block">
+                    <div className="bg-white shadow rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-gray-900">{event.display_name}</h3>
+                          <p className="text-sm text-gray-500">
+                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusColors[event.status]}`}>
+                            {event.status}
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            ${Number(event.client_pay).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden sm:block bg-white shadow rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Event
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Amount
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {events.map((event) => (
+                      <tr key={event.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <Link
+                            href={`/events/${event.id}`}
+                            className="text-blue-600 hover:text-blue-500 font-medium"
+                          >
+                            {event.display_name}
+                          </Link>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {new Date(event.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[event.status]}`}>
+                            {event.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          ${Number(event.client_pay).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

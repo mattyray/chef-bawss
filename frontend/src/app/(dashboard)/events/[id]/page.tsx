@@ -102,9 +102,9 @@ export default function EventDetailPage() {
         </div>
 
         <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">{event.display_name}</h1>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{event.display_name}</h1>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[event.status]}`}>
                 {event.status}
               </span>
@@ -112,23 +112,23 @@ export default function EventDetailPage() {
             <div className="flex gap-2">
               <Link
                 href={`/events/${eventId}/edit`}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-3 sm:px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Edit
               </Link>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
+                className="px-3 sm:px-4 py-2 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
               >
                 {deleting ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-6">
             {/* Date & Time */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Date</h3>
                 <p className="mt-1 text-gray-900 font-medium">
@@ -152,8 +152,8 @@ export default function EventDetailPage() {
 
             {/* Client Info */}
             <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Client Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Client Information</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Client</h3>
                   <p className="mt-1">
@@ -193,8 +193,8 @@ export default function EventDetailPage() {
 
             {/* Chef & Event Details */}
             <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Event Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Event Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Assigned Chef</h3>
                   <p className="mt-1 text-gray-900">
@@ -224,8 +224,8 @@ export default function EventDetailPage() {
 
             {/* Financial */}
             <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Financial</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Financial</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Client Pays</h3>
                   <p className="mt-1 text-gray-900 font-semibold text-lg">
@@ -261,7 +261,7 @@ export default function EventDetailPage() {
             {/* Notes */}
             {(event.menu_notes || event.allergies) && (
               <div className="border-t pt-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Notes</h2>
                 {event.allergies && (
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-500">Event Allergies</h3>

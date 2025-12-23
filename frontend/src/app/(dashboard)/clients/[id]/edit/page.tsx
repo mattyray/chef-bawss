@@ -88,8 +88,8 @@ export default function EditClientPage() {
           </Link>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Client</h1>
+        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Edit Client</h1>
 
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
