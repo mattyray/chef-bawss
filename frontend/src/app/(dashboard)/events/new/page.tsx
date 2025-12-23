@@ -26,7 +26,7 @@ export default function NewEventPage() {
     guest_count: '',
     client_pay: '',
     chef_pay: '',
-    status: 'scheduled',
+    status: 'upcoming',
     notes: '',
   });
 
