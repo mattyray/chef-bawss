@@ -107,28 +107,62 @@ export default function ChefsPage() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Chefs</h1>
             <p className="text-gray-500">Manage your chef team</p>
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors self-start sm:self-auto"
           >
             Invite Chef
           </button>
         </div>
 
-        {chefs.length === 0 ? (
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search chefs by name, email, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        {filteredChefs.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-500">No chefs found</p>
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="mt-4 text-blue-600 hover:text-blue-500"
-            >
-              Invite your first chef
-            </button>
+            <p className="text-gray-500">
+              {chefs.length === 0 ? 'No chefs found' : 'No chefs match your search'}
+            </p>
+            {chefs.length === 0 && (
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="mt-4 text-blue-600 hover:text-blue-500"
+              >
+                Invite your first chef
+              </button>
+            )}
+            {chefs.length > 0 && (
+              <button
+                onClick={() => { setSearch(''); setStatusFilter('all'); }}
+                className="mt-4 text-blue-600 hover:text-blue-500"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -153,7 +187,7 @@ export default function ChefsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {chefs.map((chef) => (
+                {filteredChefs.map((chef) => (
                   <tr key={chef.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">

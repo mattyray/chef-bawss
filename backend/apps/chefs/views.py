@@ -4,9 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantMixin
 from core.permissions import IsAdmin
+from core.email import send_chef_invitation_email
+from apps.users.models import InvitationToken
 from .models import ChefProfile
 from .serializers import (
-    ChefProfileSerializer, 
+    ChefProfileSerializer,
     ChefProfileUpdateSerializer,
     ChefInviteSerializer,
     ChefSelfSerializer
@@ -98,20 +100,53 @@ class ChefActivateView(TenantMixin, APIView):
             )
 
 
+class ChefResendInviteView(TenantMixin, APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, pk):
+        try:
+            chef_profile = ChefProfile.objects.get(
+                id=pk,
+                membership__organization=request.organization
+            )
+            user = chef_profile.user
+
+            # Check if user already has a password set (already accepted invite)
+            if user.has_usable_password():
+                return Response(
+                    {'detail': 'This chef has already accepted their invitation.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Delete any existing tokens and create a new one
+            InvitationToken.objects.filter(user=user).delete()
+            invitation = InvitationToken.objects.create(user=user)
+
+            # Send the invitation email
+            send_chef_invitation_email(user, request.organization, invitation.token)
+
+            return Response({'detail': 'Invitation resent successfully.'})
+        except ChefProfile.DoesNotExist:
+            return Response(
+                {'detail': 'Chef not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class ChefMeView(TenantMixin, generics.RetrieveUpdateAPIView):
     serializer_class = ChefSelfSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self):
         if not self.request.membership or self.request.membership.role != 'chef':
             return None
         return getattr(self.request.membership, 'chef_profile', None)
-    
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
             return Response(
-                {'detail': 'Chef profile not found.'}, 
+                {'detail': 'Chef profile not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )
         serializer = self.get_serializer(instance)

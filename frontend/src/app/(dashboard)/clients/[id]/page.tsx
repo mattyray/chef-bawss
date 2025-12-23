@@ -84,6 +84,19 @@ export default function ClientDetailPage() {
     cancelled: 'bg-red-100 text-red-800',
   };
 
+  // Sort events: upcoming first (by date asc), then completed/cancelled (by date desc)
+  const sortedEvents = [...events].sort((a, b) => {
+    if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+    if (a.status !== 'upcoming' && b.status === 'upcoming') return 1;
+    if (a.status === 'upcoming') {
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    }
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  const upcomingEvents = events.filter(e => e.status === 'upcoming');
+  const completedEvents = events.filter(e => e.status === 'completed');
+
   return (
     <ProtectedRoute requireAdmin>
       <div className="max-w-4xl mx-auto">
@@ -171,13 +184,40 @@ export default function ClientDetailPage() {
                 <p className="mt-1 text-gray-900 whitespace-pre-wrap">{client.notes}</p>
               </div>
             )}
+
+            {/* Client History Summary */}
+            {events.length > 0 && (
+              <div className="border-t pt-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">History Summary</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-semibold text-gray-900">{events.length}</p>
+                    <p className="text-xs text-gray-500">Total Events</p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-semibold text-blue-600">{upcomingEvents.length}</p>
+                    <p className="text-xs text-gray-500">Upcoming</p>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-semibold text-green-600">{completedEvents.length}</p>
+                    <p className="text-xs text-gray-500">Completed</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3 text-center">
+                    <p className="text-2xl font-semibold text-gray-900">
+                      ${Number(client.total_revenue || 0).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500">Total Revenue</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
-              Events ({events.length})
+              Event History ({events.length})
             </h2>
             <Link
               href="/events/new"
@@ -195,7 +235,7 @@ export default function ClientDetailPage() {
             <>
               {/* Mobile card view */}
               <div className="sm:hidden space-y-3">
-                {events.map((event) => (
+                {sortedEvents.map((event) => (
                   <Link key={event.id} href={`/events/${event.id}`} className="block">
                     <div className="bg-white shadow rounded-lg p-4">
                       <div className="flex justify-between items-start">
@@ -239,7 +279,7 @@ export default function ClientDetailPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {events.map((event) => (
+                    {sortedEvents.map((event) => (
                       <tr key={event.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <Link

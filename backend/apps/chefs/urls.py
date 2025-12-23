@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import (
-    ChefListView, 
-    ChefInviteView, 
-    ChefDetailView, 
+    ChefListView,
+    ChefInviteView,
+    ChefDetailView,
     ChefDeactivateView,
     ChefActivateView,
+    ChefResendInviteView,
     ChefMeView
 )
 
@@ -15,4 +16,5 @@ urlpatterns = [
     path('<int:pk>/', ChefDetailView.as_view(), name='chef_detail'),
     path('<int:pk>/deactivate/', ChefDeactivateView.as_view(), name='chef_deactivate'),
     path('<int:pk>/activate/', ChefActivateView.as_view(), name='chef_activate'),
+    path('<int:pk>/resend-invite/', ChefResendInviteView.as_view(), name='chef_resend_invite'),
 ]

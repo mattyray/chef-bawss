@@ -16,17 +16,21 @@ class ChefProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     phone = serializers.CharField(source='user.phone', read_only=True)
     is_active = serializers.BooleanField(source='membership.is_active', read_only=True)
+    has_accepted_invite = serializers.SerializerMethodField()
     event_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = ChefProfile
         fields = [
             'id', 'email', 'first_name', 'last_name', 'full_name', 'phone',
             'address', 'default_pay_rate', 'calendar_color', 'notes',
-            'is_active', 'event_count', 'created_at', 'updated_at'
+            'is_active', 'has_accepted_invite', 'event_count', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'calendar_color', 'event_count', 'created_at', 'updated_at']
-    
+
+    def get_has_accepted_invite(self, obj):
+        return obj.user.has_usable_password()
+
     def get_event_count(self, obj):
         return obj.events.filter(is_deleted=False).count()
 
