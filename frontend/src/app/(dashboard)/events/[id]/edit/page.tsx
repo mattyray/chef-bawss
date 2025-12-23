@@ -1,0 +1,439 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { api } from '@/lib/api';
+import { Client, Chef, Event } from '@/types';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+
+// Time picker options
+const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const minutes = ['00', '15', '30', '45'];
+const periods = ['AM', 'PM'];
+
+// Convert 12-hour to 24-hour format for API
+function to24Hour(hour: string, minute: string, period: string): string {
+  let h = parseInt(hour);
+  if (period === 'AM') {
+    if (h === 12) h = 0;
+  } else {
+    if (h !== 12) h += 12;
+  }
+  return `${h.toString().padStart(2, '0')}:${minute}`;
+}
+
+// Convert 24-hour to 12-hour parts
+function from24Hour(time: string | null): { hour: string; minute: string; period: string } {
+  if (!time) return { hour: '', minute: '00', period: 'PM' };
+  const [h, m] = time.split(':');
+  let hour = parseInt(h);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+  // Round minute to nearest 15
+  const mins = parseInt(m);
+  const roundedMin = Math.round(mins / 15) * 15;
+  const minute = roundedMin === 60 ? '00' : roundedMin.toString().padStart(2, '0');
+  return { hour: hour.toString(), minute, period };
+}
+
+export default function EditEventPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [error, setError] = useState('');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [chefs, setChefs] = useState<Chef[]>([]);
+
+  const [form, setForm] = useState({
+    client: '',
+    chef: '',
+    display_name: '',
+    date: '',
+    startHour: '',
+    startMinute: '00',
+    startPeriod: 'PM',
+    endHour: '',
+    endMinute: '00',
+    endPeriod: 'PM',
+    location: '',
+    guest_count: '',
+    client_pay: '',
+    chef_pay: '',
+    status: 'upcoming',
+    menu_notes: '',
+  });
+
+  const eventId = Number(params.id);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [eventData, clientsData, chefsData] = await Promise.all([
+          api.getEvent(eventId),
+          api.getClients(),
+          api.getChefs(),
+        ]);
+
+        const startTime = from24Hour(eventData.start_time);
+        const endTime = from24Hour(eventData.end_time);
+
+        setForm({
+          client: eventData.client.toString(),
+          chef: eventData.chef?.toString() || '',
+          display_name: eventData.name || '',
+          date: eventData.date,
+          startHour: startTime.hour,
+          startMinute: startTime.minute,
+          startPeriod: startTime.period,
+          endHour: endTime.hour,
+          endMinute: endTime.minute,
+          endPeriod: endTime.period,
+          location: eventData.location || '',
+          guest_count: eventData.guest_count?.toString() || '',
+          client_pay: eventData.client_pay || '',
+          chef_pay: eventData.chef_pay || '',
+          status: eventData.status,
+          menu_notes: eventData.menu_notes || '',
+        });
+
+        setClients(clientsData);
+        setChefs(chefsData.filter((c: Chef) => c.is_active));
+      } catch (err) {
+        setError('Failed to load event');
+        console.error(err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    if (eventId) {
+      fetchData();
+    }
+  }, [eventId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const start_time = form.startHour ? to24Hour(form.startHour, form.startMinute, form.startPeriod) : '';
+      const end_time = form.endHour ? to24Hour(form.endHour, form.endMinute, form.endPeriod) : '';
+
+      await api.updateEvent(eventId, {
+        client: Number(form.client),
+        chef: form.chef ? Number(form.chef) : null,
+        name: form.display_name,
+        date: form.date,
+        start_time,
+        end_time: end_time || null,
+        location: form.location,
+        guest_count: form.guest_count ? Number(form.guest_count) : undefined,
+        client_pay: form.client_pay ? form.client_pay : undefined,
+        chef_pay: form.chef_pay ? form.chef_pay : null,
+        status: form.status as 'upcoming' | 'completed' | 'cancelled',
+        menu_notes: form.menu_notes,
+      });
+      router.push(`/events/${eventId}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update event';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loadingData) {
+    return (
+      <ProtectedRoute requireAdmin>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <ProtectedRoute requireAdmin>
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Link
+            href={`/events/${eventId}`}
+            className="text-blue-600 hover:text-blue-500 text-sm"
+          >
+            &larr; Back to Event
+          </Link>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Event</h1>
+
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="display_name" className="block text-sm font-medium text-gray-700 mb-1">
+                Event Name *
+              </label>
+              <input
+                type="text"
+                id="display_name"
+                required
+                value={form.display_name}
+                onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Birthday Dinner, Corporate Event, etc."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client *
+                </label>
+                <select
+                  id="client"
+                  required
+                  value={form.client}
+                  onChange={(e) => setForm({ ...form, client: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select a client</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="chef" className="block text-sm font-medium text-gray-700 mb-1">
+                  Assigned Chef
+                </label>
+                <select
+                  id="chef"
+                  value={form.chef}
+                  onChange={(e) => setForm({ ...form, chef: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Unassigned</option>
+                  {chefs.map((chef) => (
+                    <option key={chef.id} value={chef.id}>
+                      {chef.first_name} {chef.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  required
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Time *
+                </label>
+                <div className="flex gap-1">
+                  <select
+                    required
+                    value={form.startHour}
+                    onChange={(e) => setForm({ ...form, startHour: e.target.value })}
+                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">--</option>
+                    {hours.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.startMinute}
+                    onChange={(e) => setForm({ ...form, startMinute: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {minutes.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.startPeriod}
+                    onChange={(e) => setForm({ ...form, startPeriod: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {periods.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Time
+                </label>
+                <div className="flex gap-1">
+                  <select
+                    value={form.endHour}
+                    onChange={(e) => setForm({ ...form, endHour: e.target.value })}
+                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">--</option>
+                    {hours.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.endMinute}
+                    onChange={(e) => setForm({ ...form, endMinute: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {minutes.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.endPeriod}
+                    onChange={(e) => setForm({ ...form, endPeriod: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {periods.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="123 Main St, City, State 12345"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="guest_count" className="block text-sm font-medium text-gray-700 mb-1">
+                  Guest Count
+                </label>
+                <input
+                  type="number"
+                  id="guest_count"
+                  min="1"
+                  value={form.guest_count}
+                  onChange={(e) => setForm({ ...form, guest_count: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="10"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="client_pay" className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Pays ($)
+                </label>
+                <input
+                  type="number"
+                  id="client_pay"
+                  min="0"
+                  step="0.01"
+                  value={form.client_pay}
+                  onChange={(e) => setForm({ ...form, client_pay: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="500.00"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="chef_pay" className="block text-sm font-medium text-gray-700 mb-1">
+                  Chef Pay ($)
+                </label>
+                <input
+                  type="number"
+                  id="chef_pay"
+                  min="0"
+                  step="0.01"
+                  value={form.chef_pay}
+                  onChange={(e) => setForm({ ...form, chef_pay: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="200.00"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                id="status"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="upcoming">Upcoming</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="menu_notes" className="block text-sm font-medium text-gray-700 mb-1">
+                Menu / Notes
+              </label>
+              <textarea
+                id="menu_notes"
+                rows={3}
+                value={form.menu_notes}
+                onChange={(e) => setForm({ ...form, menu_notes: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Menu details, special requests, allergies..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Link
+                href={`/events/${eventId}`}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
