@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { formatPhoneNumber } from '@/lib/utils';
 import { Client } from '@/types';
 import Link from 'next/link';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -106,7 +107,9 @@ export default function ClientsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{client.email}</div>
-                      <div className="text-sm text-gray-500">{client.phone}</div>
+                      {client.phone && (
+                        <div className="text-sm text-gray-500">{formatPhoneNumber(client.phone)}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900 max-w-xs truncate">
