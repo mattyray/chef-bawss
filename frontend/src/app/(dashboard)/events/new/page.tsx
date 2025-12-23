@@ -23,17 +23,6 @@ function to24Hour(hour: string, minute: string, period: string): string {
   return `${h.toString().padStart(2, '0')}:${minute}`;
 }
 
-// Convert 24-hour to 12-hour parts
-function from24Hour(time: string): { hour: string; minute: string; period: string } {
-  if (!time) return { hour: '', minute: '', period: 'PM' };
-  const [h, m] = time.split(':');
-  let hour = parseInt(h);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-  return { hour: hour.toString(), minute: m, period };
-}
-
 export default function NewEventPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -58,7 +47,7 @@ export default function NewEventPage() {
     client_pay: '',
     chef_pay: '',
     status: 'upcoming',
-    notes: '',
+    menu_notes: '',
   });
 
   useEffect(() => {
@@ -99,8 +88,8 @@ export default function NewEventPage() {
         guest_count: form.guest_count ? Number(form.guest_count) : undefined,
         client_pay: form.client_pay ? form.client_pay : undefined,
         chef_pay: form.chef_pay ? form.chef_pay : undefined,
-        status: form.status,
-        notes: form.notes,
+        status: form.status as 'upcoming' | 'completed' | 'cancelled',
+        menu_notes: form.menu_notes,
       });
       router.push('/events');
     } catch (err: unknown) {
@@ -223,39 +212,76 @@ export default function NewEventPage() {
               </div>
 
               <div>
-                <label htmlFor="start_time" className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Start Time *
                 </label>
-                <select
-                  id="start_time"
-                  required
-                  value={form.start_time}
-                  onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select time</option>
-                  {timeOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                <div className="flex gap-1">
+                  <select
+                    required
+                    value={form.startHour}
+                    onChange={(e) => setForm({ ...form, startHour: e.target.value })}
+                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">--</option>
+                    {hours.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.startMinute}
+                    onChange={(e) => setForm({ ...form, startMinute: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {minutes.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.startPeriod}
+                    onChange={(e) => setForm({ ...form, startPeriod: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {periods.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label htmlFor="end_time" className="block text-sm font-medium text-gray-700 mb-1">
-                  End Time *
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Time
                 </label>
-                <select
-                  id="end_time"
-                  required
-                  value={form.end_time}
-                  onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select time</option>
-                  {timeOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                <div className="flex gap-1">
+                  <select
+                    value={form.endHour}
+                    onChange={(e) => setForm({ ...form, endHour: e.target.value })}
+                    className="w-20 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">--</option>
+                    {hours.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.endMinute}
+                    onChange={(e) => setForm({ ...form, endMinute: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {minutes.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.endPeriod}
+                    onChange={(e) => setForm({ ...form, endPeriod: e.target.value })}
+                    className="w-16 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {periods.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -339,14 +365,14 @@ export default function NewEventPage() {
             </div>
 
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
+              <label htmlFor="menu_notes" className="block text-sm font-medium text-gray-700 mb-1">
+                Menu / Notes
               </label>
               <textarea
-                id="notes"
+                id="menu_notes"
                 rows={3}
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                value={form.menu_notes}
+                onChange={(e) => setForm({ ...form, menu_notes: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Menu details, special requests, allergies..."
               />
