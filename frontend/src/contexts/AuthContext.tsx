@@ -58,8 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     last_name: string;
     business_name: string;
   }) => {
-    const response = await api.register(data);
-    setUser(response.user);
+    await api.register(data);
+    // Fetch full user data including role and organization
+    const userData = await api.getMe();
+    setUser(userData);
   };
 
   const logout = async () => {
