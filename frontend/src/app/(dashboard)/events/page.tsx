@@ -88,7 +88,7 @@ export default function EventsPage() {
           {/* Mobile card view */}
           <div className="sm:hidden space-y-3">
             {events.map((event) => (
-              <Link key={event.id} href={`/events/${event.id}`} className="block">
+              <Link key={event.id} href={isAdmin ? `/events/${event.id}` : `/events/${event.id}/chef-view`} className="block">
                 <div className="bg-white shadow rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
@@ -106,6 +106,11 @@ export default function EventsPage() {
                       {isAdmin && event.client_pay && (
                         <span className="text-sm font-medium text-gray-900">
                           ${Number(event.client_pay).toLocaleString()}
+                        </span>
+                      )}
+                      {!isAdmin && event.chef_pay && (
+                        <span className="text-sm font-medium text-green-600">
+                          ${Number(event.chef_pay).toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -132,9 +137,13 @@ export default function EventsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Price
+                    </th>
+                  ) : (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Your Pay
                     </th>
                   )}
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -172,14 +181,18 @@ export default function EventsPage() {
                         {event.status}
                       </span>
                     </td>
-                    {isAdmin && (
+                    {isAdmin ? (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {event.client_pay ? `$${Number(event.client_pay).toLocaleString()}` : '-'}
+                      </td>
+                    ) : (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                        {event.chef_pay ? `$${Number(event.chef_pay).toLocaleString()}` : '-'}
                       </td>
                     )}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
-                        href={`/events/${event.id}`}
+                        href={isAdmin ? `/events/${event.id}` : `/events/${event.id}/chef-view`}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         View
