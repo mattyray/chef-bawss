@@ -64,6 +64,7 @@ export default function EditEventPage() {
     chef_pay: '',
     deposit_amount: '',
     deposit_received: false,
+    payment_received: false,
     status: 'upcoming',
     menu_notes: '',
   });
@@ -99,6 +100,7 @@ export default function EditEventPage() {
           chef_pay: eventData.chef_pay || '',
           deposit_amount: eventData.deposit_amount || '',
           deposit_received: eventData.deposit_received || false,
+          payment_received: eventData.payment_received || false,
           status: eventData.status,
           menu_notes: eventData.menu_notes || '',
         });
@@ -140,6 +142,7 @@ export default function EditEventPage() {
         chef_pay: form.chef_pay ? form.chef_pay : null,
         deposit_amount: form.deposit_amount ? form.deposit_amount : null,
         deposit_received: form.deposit_received,
+        payment_received: form.payment_received,
         status: form.status as 'upcoming' | 'completed' | 'cancelled',
         menu_notes: form.menu_notes,
       });
@@ -408,20 +411,34 @@ export default function EditEventPage() {
               </div>
             </div>
 
-            {form.deposit_amount && (
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {form.deposit_amount && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="deposit_received"
+                    checked={form.deposit_received}
+                    onChange={(e) => setForm({ ...form, deposit_received: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="deposit_received" className="ml-2 text-sm text-gray-700">
+                    Deposit received
+                  </label>
+                </div>
+              )}
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="deposit_received"
-                  checked={form.deposit_received}
-                  onChange={(e) => setForm({ ...form, deposit_received: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  id="payment_received"
+                  checked={form.payment_received}
+                  onChange={(e) => setForm({ ...form, payment_received: e.target.checked })}
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                 />
-                <label htmlFor="deposit_received" className="ml-2 text-sm text-gray-700">
-                  Deposit received
+                <label htmlFor="payment_received" className="ml-2 text-sm text-gray-700">
+                  Paid in full
                 </label>
               </div>
-            )}
+            </div>
 
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">

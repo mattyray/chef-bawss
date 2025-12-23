@@ -35,6 +35,7 @@ class Event(models.Model):
     chef_pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     deposit_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     deposit_received = models.BooleanField(default=False)
+    payment_received = models.BooleanField(default=False)
     
     internal_notes = models.TextField(blank=True, help_text='Admin only')
     chef_notes = models.TextField(blank=True, help_text='Editable by assigned chef')

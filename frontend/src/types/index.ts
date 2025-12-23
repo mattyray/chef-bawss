@@ -89,6 +89,7 @@ export interface Event {
   profit?: string;
   deposit_amount: string | null;
   deposit_received: boolean;
+  payment_received: boolean;
   internal_notes?: string;
   chef_notes: string;
   status: 'upcoming' | 'completed' | 'cancelled';

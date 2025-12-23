@@ -256,6 +256,24 @@ export default function EventDetailPage() {
                   </p>
                 </div>
               </div>
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-500">Payment Status</h3>
+                <p className="mt-1">
+                  {event.payment_received ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Paid in Full
+                    </span>
+                  ) : event.deposit_received ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Deposit Received
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      Unpaid
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
 
             {/* Notes */}

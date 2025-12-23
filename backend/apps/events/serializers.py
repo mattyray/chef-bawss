@@ -48,7 +48,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
             'client', 'client_name', 'client_email', 'client_phone', 'client_allergies',
             'chef', 'chef_name', 'chef_email', 'chef_phone', 'chef_color',
             'location', 'guest_count', 'allergies', 'menu_notes',
-            'client_pay', 'chef_pay', 'profit', 'deposit_amount', 'deposit_received',
+            'client_pay', 'chef_pay', 'profit', 'deposit_amount', 'deposit_received', 'payment_received',
             'internal_notes', 'chef_notes', 'status',
             'created_at', 'updated_at'
         ]
@@ -73,7 +73,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'client', 'chef', 'name', 'date', 'start_time', 'end_time',
             'location', 'guest_count', 'allergies', 'menu_notes',
-            'client_pay', 'chef_pay', 'deposit_amount', 'deposit_received',
+            'client_pay', 'chef_pay', 'deposit_amount', 'deposit_received', 'payment_received',
             'internal_notes', 'chef_notes', 'status'
         ]
     
