@@ -16,7 +16,7 @@ function StatCard({ title, value, subtitle }: { title: string; value: string; su
   );
 }
 
-function EventCard({ event }: { event: DashboardEvent }) {
+function AdminEventCard({ event }: { event: DashboardEvent }) {
   return (
     <Link href={`/events/${event.id}`} className="block">
       <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
@@ -41,6 +41,42 @@ function EventCard({ event }: { event: DashboardEvent }) {
           <p className="mt-2 text-sm font-medium text-gray-900">
             ${Number(event.client_pay).toLocaleString()}
           </p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function ChefEventCard({ event }: { event: DashboardEvent }) {
+  return (
+    <Link href={`/events/${event.id}/chef-view`} className="block">
+      <div className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="font-medium text-gray-900">{event.display_name}</h3>
+            <p className="text-sm text-gray-500">{event.client_name}</p>
+          </div>
+          {event.chef_pay && (
+            <p className="text-sm font-semibold text-green-600">
+              ${Number(event.chef_pay).toLocaleString()}
+            </p>
+          )}
+        </div>
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            <p className="font-medium text-gray-700">
+              {new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </p>
+            {event.start_time && <p>{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</p>}
+          </div>
+          {event.guest_count && (
+            <div className="text-right text-sm">
+              <p className="text-gray-500">{event.guest_count} guests</p>
+            </div>
+          )}
+        </div>
+        {event.location && (
+          <p className="mt-2 text-xs text-gray-400 truncate">{event.location}</p>
         )}
       </div>
     </Link>
@@ -152,7 +188,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {adminData.upcoming_events.map((event) => (
-                  <EventCard key={event.id} event={event} />
+                  <AdminEventCard key={event.id} event={event} />
                 ))}
               </div>
             )}
@@ -167,7 +203,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {adminData.recent_completed.map((event) => (
-                  <EventCard key={event.id} event={event} />
+                  <AdminEventCard key={event.id} event={event} />
                 ))}
               </div>
             )}
@@ -208,7 +244,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {chefData.upcoming_events.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <ChefEventCard key={event.id} event={event} />
               ))}
             </div>
           )}
