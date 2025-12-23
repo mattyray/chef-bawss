@@ -92,6 +92,12 @@ export default function CalendarPage() {
           <p className="text-gray-500">View your scheduled events</p>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href="/events/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            + New Event
+          </Link>
           <button
             onClick={goToToday}
             className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
