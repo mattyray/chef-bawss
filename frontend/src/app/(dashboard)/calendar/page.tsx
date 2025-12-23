@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { CalendarEvent } from '@/types';
 
@@ -12,10 +13,14 @@ const statusColors: Record<string, string> = {
 };
 
 export default function CalendarPage() {
+  const { isAdmin } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const getEventLink = (eventId: number) =>
+    isAdmin ? `/events/${eventId}` : `/events/${eventId}/chef-view`;
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -95,12 +100,14 @@ export default function CalendarPage() {
 
         {/* Controls row */}
         <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
-          <Link
-            href="/events/new"
-            className="hidden sm:block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            + New Event
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/events/new"
+              className="hidden sm:block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              + New Event
+            </Link>
+          )}
           <button
             onClick={goToToday}
             className="px-2 py-1 text-xs sm:text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
@@ -176,13 +183,15 @@ export default function CalendarPage() {
                       }`}>
                         {day}
                       </div>
-                      <Link
-                        href={`/events/new?date=${getDateString(day)}`}
-                        className="hidden sm:flex opacity-0 group-hover:opacity-100 w-5 h-5 items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-opacity"
-                        title="Add event"
-                      >
-                        +
-                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href={`/events/new?date=${getDateString(day)}`}
+                          className="hidden sm:flex opacity-0 group-hover:opacity-100 w-5 h-5 items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                          title="Add event"
+                        >
+                          +
+                        </Link>
+                      )}
                     </div>
                     <div className="space-y-0.5 sm:space-y-1 mt-0.5 sm:mt-1">
                       {/* On mobile: show dot indicators, on desktop: show event details */}
@@ -191,7 +200,7 @@ export default function CalendarPage() {
                         {dayEvents.slice(0, 4).map((event) => (
                           <Link
                             key={event.id}
-                            href={`/events/${event.id}`}
+                            href={getEventLink(event.id)}
                             className={`w-2 h-2 rounded-full ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
                             title={`${event.title} - ${event.extendedProps.client_name}`}
                           />
@@ -205,7 +214,7 @@ export default function CalendarPage() {
                         {dayEvents.slice(0, 3).map((event) => (
                           <Link
                             key={event.id}
-                            href={`/events/${event.id}`}
+                            href={getEventLink(event.id)}
                             className={`block px-2 py-1 text-xs text-white rounded truncate hover:opacity-80 ${statusColors[event.extendedProps.status] || 'bg-gray-500'}`}
                             title={`${event.title} - ${event.extendedProps.client_name}`}
                           >
