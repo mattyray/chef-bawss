@@ -92,7 +92,18 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-      throw new ApiError(response.status, error.detail || 'Request failed', error);
+      // Handle DRF validation errors (field-based) or detail messages
+      let message = 'Request failed';
+      if (error.detail) {
+        message = error.detail;
+      } else if (typeof error === 'object') {
+        // Extract first validation error
+        const firstKey = Object.keys(error)[0];
+        if (firstKey && Array.isArray(error[firstKey])) {
+          message = `${firstKey}: ${error[firstKey][0]}`;
+        }
+      }
+      throw new ApiError(response.status, message, error);
     }
 
     // Handle 204 No Content

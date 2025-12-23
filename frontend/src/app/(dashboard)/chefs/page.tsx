@@ -42,9 +42,10 @@ export default function ChefsPage() {
       setShowInviteModal(false);
       setInviteForm({ email: '', first_name: '', last_name: '', phone: '' });
       fetchChefs();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Failed to invite chef');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to invite chef';
+      alert(errorMessage);
     } finally {
       setInviting(false);
     }
