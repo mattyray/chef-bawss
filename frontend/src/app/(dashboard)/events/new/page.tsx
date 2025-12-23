@@ -7,24 +7,32 @@ import { api } from '@/lib/api';
 import { Client, Chef } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-// Generate time options in 15-minute increments
-function generateTimeOptions() {
-  const options: { value: string; label: string }[] = [];
-  for (let hour = 0; hour < 24; hour++) {
-    for (let minute = 0; minute < 60; minute += 15) {
-      const h = hour.toString().padStart(2, '0');
-      const m = minute.toString().padStart(2, '0');
-      const value = `${h}:${m}`;
-      const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const ampm = hour < 12 ? 'AM' : 'PM';
-      const label = `${displayHour}:${m} ${ampm}`;
-      options.push({ value, label });
-    }
+// Time picker options
+const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const minutes = ['00', '15', '30', '45'];
+const periods = ['AM', 'PM'];
+
+// Convert 12-hour to 24-hour format for API
+function to24Hour(hour: string, minute: string, period: string): string {
+  let h = parseInt(hour);
+  if (period === 'AM') {
+    if (h === 12) h = 0;
+  } else {
+    if (h !== 12) h += 12;
   }
-  return options;
+  return `${h.toString().padStart(2, '0')}:${minute}`;
 }
 
-const timeOptions = generateTimeOptions();
+// Convert 24-hour to 12-hour parts
+function from24Hour(time: string): { hour: string; minute: string; period: string } {
+  if (!time) return { hour: '', minute: '', period: 'PM' };
+  const [h, m] = time.split(':');
+  let hour = parseInt(h);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  if (hour === 0) hour = 12;
+  else if (hour > 12) hour -= 12;
+  return { hour: hour.toString(), minute: m, period };
+}
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -39,8 +47,12 @@ export default function NewEventPage() {
     chef: '',
     display_name: '',
     date: '',
-    start_time: '',
-    end_time: '',
+    startHour: '',
+    startMinute: '00',
+    startPeriod: 'PM',
+    endHour: '',
+    endMinute: '00',
+    endPeriod: 'PM',
     location: '',
     guest_count: '',
     client_pay: '',
