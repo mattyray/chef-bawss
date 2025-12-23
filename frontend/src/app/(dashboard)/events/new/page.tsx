@@ -47,6 +47,8 @@ export default function NewEventPage() {
     guest_count: '',
     client_pay: '',
     chef_pay: '',
+    deposit_amount: '',
+    deposit_received: false,
     status: 'upcoming',
     menu_notes: '',
   });
@@ -89,6 +91,8 @@ export default function NewEventPage() {
         guest_count: form.guest_count ? Number(form.guest_count) : undefined,
         client_pay: form.client_pay ? form.client_pay : undefined,
         chef_pay: form.chef_pay ? form.chef_pay : undefined,
+        deposit_amount: form.deposit_amount ? form.deposit_amount : undefined,
+        deposit_received: form.deposit_received,
         status: form.status as 'upcoming' | 'completed' | 'cancelled',
         menu_notes: form.menu_notes,
       });
@@ -300,7 +304,7 @@ export default function NewEventPage() {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="grid grid-cols-4 gap-2 sm:gap-4">
               <div>
                 <label htmlFor="guest_count" className="block text-sm font-medium text-gray-700 mb-1">
                   Guests
@@ -347,7 +351,38 @@ export default function NewEventPage() {
                   placeholder="200"
                 />
               </div>
+
+              <div>
+                <label htmlFor="deposit_amount" className="block text-sm font-medium text-gray-700 mb-1">
+                  Deposit $
+                </label>
+                <input
+                  type="number"
+                  id="deposit_amount"
+                  min="0"
+                  step="0.01"
+                  value={form.deposit_amount}
+                  onChange={(e) => setForm({ ...form, deposit_amount: e.target.value })}
+                  className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="100"
+                />
+              </div>
             </div>
+
+            {form.deposit_amount && (
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="deposit_received"
+                  checked={form.deposit_received}
+                  onChange={(e) => setForm({ ...form, deposit_received: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="deposit_received" className="ml-2 text-sm text-gray-700">
+                  Deposit received
+                </label>
+              </div>
+            )}
 
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
