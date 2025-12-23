@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Client, Chef, Event } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { SearchableSelect, SearchableSelectOption } from '@/components/SearchableSelect';
 
 // Time picker options
 const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -122,6 +123,14 @@ export default function EditEventPage() {
     }
   }, [eventId]);
 
+  const clientOptions: SearchableSelectOption[] = useMemo(() => {
+    return clients.map((client) => ({
+      value: client.id.toString(),
+      label: client.name,
+      sublabel: client.email || undefined,
+    }));
+  }, [clients]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -210,20 +219,15 @@ export default function EditEventPage() {
                 <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-1">
                   Client *
                 </label>
-                <select
+                <SearchableSelect
                   id="client"
                   required
+                  options={clientOptions}
                   value={form.client}
-                  onChange={(e) => setForm({ ...form, client: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select a client</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setForm({ ...form, client: value })}
+                  placeholder="Select a client"
+                  emptyMessage="No clients available"
+                />
               </div>
 
               <div>
