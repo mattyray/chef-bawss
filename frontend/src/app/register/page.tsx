@@ -63,19 +63,34 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
-            Chef Bawss
-          </h1>
-          <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
-            Register your business
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Start managing your private chef business today
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="border-b border-gray-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700">
+              Chef Bawss
+            </Link>
+            <Link
+              href="/login"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Log in
+            </Link>
+          </div>
         </div>
+      </nav>
+
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
+              Register your business
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Start managing your private chef business today
+            </p>
+          </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -213,6 +228,7 @@ export default function RegisterPage() {
             </Link>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
