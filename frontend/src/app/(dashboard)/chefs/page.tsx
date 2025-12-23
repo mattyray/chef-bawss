@@ -84,6 +84,17 @@ export default function ChefsPage() {
     }
   };
 
+  const handleResendInvite = async (chef: Chef) => {
+    try {
+      await api.resendChefInvite(chef.id);
+      alert('Invitation resent successfully!');
+    } catch (err: unknown) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to resend invitation';
+      alert(errorMessage);
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute requireAdmin>
@@ -218,17 +229,32 @@ export default function ChefsPage() {
                       {chef.event_count || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          chef.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {chef.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full inline-block w-fit ${
+                            chef.is_active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {chef.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                        {!chef.has_accepted_invite && (
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 inline-block w-fit">
+                            Invite Pending
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      {!chef.has_accepted_invite && (
+                        <button
+                          onClick={() => handleResendInvite(chef)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Resend Invite
+                        </button>
+                      )}
                       <button
                         onClick={() => handleToggleActive(chef)}
                         className={`${

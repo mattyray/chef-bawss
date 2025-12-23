@@ -57,6 +57,7 @@ export interface Chef {
   calendar_color: string;
   notes: string;
   is_active: boolean;
+  has_accepted_invite: boolean;
   event_count: number;
   created_at: string;
   updated_at: string;

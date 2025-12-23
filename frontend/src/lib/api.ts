@@ -252,6 +252,10 @@ class ApiClient {
     return this.request(`/api/chefs/${id}/activate/`, { method: 'POST' });
   }
 
+  async resendChefInvite(id: number) {
+    return this.request<{ detail: string }>(`/api/chefs/${id}/resend-invite/`, { method: 'POST' });
+  }
+
   // Events
   async getEvents(params?: { status?: string; chef_id?: number }) {
     const searchParams = new URLSearchParams();

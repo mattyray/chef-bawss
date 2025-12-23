@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantQuerysetMixin, TenantMixin
 from core.permissions import IsAdmin
+from core.email import send_event_assignment_email, send_event_update_email
 from .models import Event
 from .serializers import (
     EventListSerializer,
@@ -55,8 +56,18 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
         return EventListSerializer
     
     def perform_create(self, serializer):
-        serializer.save(organization=self.request.organization)
-    
+        event = serializer.save(organization=self.request.organization)
+        # Send email notification to chef if assigned
+        if event.chef:
+            try:
+                send_event_assignment_email(
+                    event.chef.user,
+                    event,
+                    self.request.organization
+                )
+            except Exception:
+                pass  # Don't fail the request if email fails
+
     def create(self, request, *args, **kwargs):
         if not request.membership or request.membership.role != 'admin':
             return Response(
@@ -99,7 +110,38 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
                     {'detail': 'Chefs can only update chef_notes.'},
                     status=status.HTTP_403_FORBIDDEN
                 )
-        return super().update(request, *args, **kwargs)
+            return super().update(request, *args, **kwargs)
+
+        # Admin updating - check for chef changes
+        instance = self.get_object()
+        old_chef = instance.chef
+
+        response = super().update(request, *args, **kwargs)
+
+        # Refresh instance to get updated values
+        instance.refresh_from_db()
+
+        # Send notifications
+        try:
+            if instance.chef:
+                if old_chef != instance.chef:
+                    # New chef assigned - send assignment email
+                    send_event_assignment_email(
+                        instance.chef.user,
+                        instance,
+                        request.organization
+                    )
+                else:
+                    # Same chef - send update email
+                    send_event_update_email(
+                        instance.chef.user,
+                        instance,
+                        request.organization
+                    )
+        except Exception:
+            pass  # Don't fail the request if email fails
+
+        return response
     
     def destroy(self, request, *args, **kwargs):
         if not request.membership or request.membership.role != 'admin':
