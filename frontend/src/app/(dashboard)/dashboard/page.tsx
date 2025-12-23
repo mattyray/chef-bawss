@@ -93,9 +93,31 @@ export default function DashboardPage() {
   if (isAdmin && adminData) {
     return (
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, {user?.first_name}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-500">Welcome back, {user?.first_name}</p>
+          </div>
+          <div className="flex gap-3">
+            <Link
+              href="/events/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              + New Event
+            </Link>
+            <Link
+              href="/clients/new"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              + New Client
+            </Link>
+            <Link
+              href="/chefs"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              + Invite Chef
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

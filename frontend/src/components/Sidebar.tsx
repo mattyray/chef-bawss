@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -75,16 +76,43 @@ function LogoutIcon({ className }: { className?: string }) {
   );
 }
 
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout, isAdmin } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   const navItems = isAdmin ? adminNavItems : chefNavItems;
 
-  return (
-    <div className="flex h-full w-64 flex-col bg-gray-900">
-      <div className="flex h-16 items-center justify-center border-b border-gray-800">
+  const handleNavClick = () => {
+    setIsOpen(false);
+  };
+
+  const sidebarContent = (
+    <>
+      <div className="flex h-16 items-center justify-between border-b border-gray-800 px-4">
         <h1 className="text-xl font-bold text-white">Chef Bawss</h1>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="lg:hidden p-1 text-gray-400 hover:text-white"
+        >
+          <CloseIcon className="h-6 w-6" />
+        </button>
       </div>
 
       <nav className="flex-1 space-y-1 px-2 py-4">
@@ -94,6 +122,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleNavClick}
               className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
                 isActive
                   ? 'bg-gray-800 text-white'
@@ -137,6 +166,45 @@ export function Sidebar() {
           </button>
         </div>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-gray-900 h-14 flex items-center justify-between px-4">
+        <h1 className="text-lg font-bold text-white">Chef Bawss</h1>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 text-gray-400 hover:text-white"
+        >
+          <MenuIcon className="h-6 w-6" />
+        </button>
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <div
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex h-full flex-col">
+          {sidebarContent}
+        </div>
+      </div>
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex h-full w-64 flex-col bg-gray-900">
+        {sidebarContent}
+      </div>
+    </>
   );
 }
