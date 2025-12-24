@@ -13,8 +13,11 @@ from .serializers import (
     ChangePasswordSerializer,
     MeSerializer,
     AcceptInviteSerializer,
-    InviteInfoSerializer
+    InviteInfoSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
+from core.email import send_password_reset_email
 
 User = get_user_model()
 
@@ -114,6 +117,52 @@ class AcceptInviteView(APIView):
 
         return Response({
             'detail': 'Account activated successfully.',
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+        })
+
+
+class PasswordResetRequestView(APIView):
+    """Request a password reset email."""
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.save()
+
+        # Send email if user exists (token will be None if user doesn't exist)
+        if token:
+            try:
+                send_password_reset_email(token.user, token.token)
+            except Exception:
+                pass  # Don't reveal email sending errors
+
+        # Always return success to not reveal if email exists
+        return Response({
+            'detail': 'If an account with that email exists, we have sent a password reset link.'
+        })
+
+
+class PasswordResetConfirmView(APIView):
+    """Confirm password reset with token and new password."""
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Generate tokens so they're logged in immediately
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'detail': 'Password has been reset successfully.',
             'user': UserSerializer(user).data,
             'tokens': {
                 'refresh': str(refresh),

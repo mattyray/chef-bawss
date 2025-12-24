@@ -143,3 +143,47 @@ class InviteInfoSerializer(serializers.Serializer):
             'last_name': user.last_name,
             'organization_name': org_name,
         }
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Request a password reset email."""
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        # We don't reveal whether the email exists or not for security
+        self.user = User.objects.filter(email=value).first()
+        return value
+
+    def save(self):
+        if self.user:
+            # Delete any existing tokens for this user
+            PasswordResetToken.objects.filter(user=self.user).delete()
+            # Create new token
+            token = PasswordResetToken.objects.create(user=self.user)
+            return token
+        return None
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Confirm password reset with token and new password."""
+    token = serializers.CharField()
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    def validate_token(self, value):
+        try:
+            reset_token = PasswordResetToken.objects.select_related('user').get(token=value)
+        except PasswordResetToken.DoesNotExist:
+            raise serializers.ValidationError('Invalid or expired reset link.')
+
+        if not reset_token.is_valid:
+            raise serializers.ValidationError('This reset link has expired or already been used.')
+
+        self.reset_token = reset_token
+        return value
+
+    def save(self):
+        user = self.reset_token.user
+        user.set_password(self.validated_data['password'])
+        user.save()
+        self.reset_token.mark_used()
+        return user
