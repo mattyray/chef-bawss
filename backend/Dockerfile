@@ -20,5 +20,4 @@ RUN python manage.py collectstatic --noinput --settings=config.settings.producti
 
 EXPOSE 8000
 
-# Start command is defined in railway.json for Railway deployments
-# For local Docker: docker run -p 8000:8000 -e PORT=8000 image gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:${PORT:-8000} --log-level debug --access-logfile - --error-logfile - config.wsgi:application"]
