@@ -20,4 +20,5 @@ RUN python manage.py collectstatic --noinput --settings=config.settings.producti
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi:application"]
+# Start command is defined in railway.json for Railway deployments
+# For local Docker: docker run -p 8000:8000 -e PORT=8000 image gunicorn --bind 0.0.0.0:8000 config.wsgi:application
