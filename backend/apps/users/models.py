@@ -70,3 +70,34 @@ class InvitationToken(models.Model):
 
     def __str__(self):
         return f"Invitation for {self.user.email}"
+
+
+class PasswordResetToken(models.Model):
+    """Token for password reset requests."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(48)
+        if not self.expires_at:
+            # Password reset tokens expire in 1 hour
+            self.expires_at = timezone.now() + timedelta(hours=1)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        return self.used_at is None and timezone.now() < self.expires_at
+
+    def mark_used(self):
+        self.used_at = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"Password reset for {self.user.email}"
