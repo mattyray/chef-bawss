@@ -20,4 +20,7 @@ RUN python manage.py collectstatic --noinput --settings=config.settings.producti
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:${PORT:-8000} --log-level debug --access-logfile - --error-logfile - config.wsgi:application"]
+# start.sh is already copied with backend/ above
+RUN chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]
