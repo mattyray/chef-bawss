@@ -6,6 +6,6 @@
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "cd backend && python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:$PORT config.wsgi:application"
+    "startCommand": "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:$PORT config.wsgi:application"
   }
 }
