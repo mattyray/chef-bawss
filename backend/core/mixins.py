@@ -41,4 +41,7 @@ class TenantQuerysetMixin(TenantMixin):
         return qs.none()
     
 
+
+
+    
     
