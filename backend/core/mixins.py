@@ -39,3 +39,6 @@ class TenantQuerysetMixin(TenantMixin):
         if self.request.organization:
             return qs.filter(organization=self.request.organization)
         return qs.none()
+    
+
+    
