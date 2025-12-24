@@ -187,6 +187,28 @@ class ApiClient {
     return response;
   }
 
+  async requestPasswordReset(email: string) {
+    return this.request<{ detail: string }>('/api/auth/password-reset/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+      skipAuth: true,
+    });
+  }
+
+  async confirmPasswordReset(token: string, password: string) {
+    const response = await this.request<{
+      detail: string;
+      user: import('@/types').User;
+      tokens: { access: string; refresh: string };
+    }>('/api/auth/password-reset/confirm/', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+      skipAuth: true,
+    });
+    this.setTokens(response.tokens.access, response.tokens.refresh);
+    return response;
+  }
+
   // Clients
   async getClients() {
     return this.request<import('@/types').Client[]>('/api/clients/');
