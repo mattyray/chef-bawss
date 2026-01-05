@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { Client, Chef } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { SearchableSelect, SearchableSelectOption } from '@/components/SearchableSelect';
+import { AddClientModal } from '@/components/AddClientModal';
 
 // Time picker options
 const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -32,6 +33,7 @@ export default function NewEventPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [chefs, setChefs] = useState<Chef[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
 
   const [form, setForm] = useState({
     client: '',
@@ -81,6 +83,11 @@ export default function NewEventPage() {
       sublabel: client.email || undefined,
     }));
   }, [clients]);
+
+  const handleClientCreated = (newClient: Client) => {
+    setClients((prev) => [...prev, newClient]);
+    setForm((prev) => ({ ...prev, client: newClient.id.toString() }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
