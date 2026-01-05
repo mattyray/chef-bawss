@@ -174,9 +174,18 @@ export default function NewEventPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="client" className="block text-sm font-medium text-gray-700 mb-1">
-                  Client *
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="client" className="block text-sm font-medium text-gray-700">
+                    Client *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddClientModal(true)}
+                    className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                  >
+                    + Add New
+                  </button>
+                </div>
                 <SearchableSelect
                   id="client"
                   required
@@ -186,14 +195,6 @@ export default function NewEventPage() {
                   placeholder="Select a client"
                   emptyMessage="No clients yet"
                 />
-                {clients.length === 0 && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    No clients yet.{' '}
-                    <Link href="/clients/new" className="text-blue-600 hover:text-blue-500">
-                      Add a client first
-                    </Link>
-                  </p>
-                )}
               </div>
 
               <div>
@@ -474,6 +475,12 @@ export default function NewEventPage() {
             </div>
           </form>
         </div>
+
+        <AddClientModal
+          isOpen={showAddClientModal}
+          onClose={() => setShowAddClientModal(false)}
+          onClientCreated={handleClientCreated}
+        />
       </div>
     </ProtectedRoute>
   );
