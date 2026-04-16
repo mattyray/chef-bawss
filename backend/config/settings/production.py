@@ -52,12 +52,6 @@ SECURE_HSTS_PRELOAD = True
 # Referrer policy
 SECURE_REFERRER_POLICY = 'same-origin'
 
-# Redis (Fly.io uses REDIS_URL)
-REDIS_URL = os.getenv('REDIS_URL')
-if REDIS_URL:
-    CELERY_BROKER_URL = REDIS_URL
-    CELERY_RESULT_BACKEND = REDIS_URL
-
 # AWS SES Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')

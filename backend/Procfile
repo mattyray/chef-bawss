@@ -1,2 +1,1 @@
-web: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
-worker: celery -A config worker -l info
+web: gunicorn --bind 0.0.0.0:$PORT config.wsgi:application

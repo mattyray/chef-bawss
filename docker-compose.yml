@@ -10,13 +10,10 @@ services:
     ports:
       - "5437:5432"
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6384:6379"
-
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
@@ -24,18 +21,6 @@ services:
       - "8007:8000"
     depends_on:
       - db
-      - redis
-    env_file:
-      - ./backend/.env
-
-  celery:
-    build: ./backend
-    command: celery -A config worker -l info
-    volumes:
-      - ./backend:/app
-    depends_on:
-      - db
-      - redis
     env_file:
       - ./backend/.env
 

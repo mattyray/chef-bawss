@@ -6,6 +6,7 @@
     "watchPatterns": ["backend/**"]
   },
   "deploy": {
-    "startCommand": "gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
+    "healthcheckPath": "/api/health/",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
