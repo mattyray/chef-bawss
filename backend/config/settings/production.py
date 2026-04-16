@@ -32,8 +32,11 @@ else:
         }
     }
 
-# CORS - temporarily allow all origins for debugging
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://chefbawss.com',
+    'https://www.chefbawss.com',
+    'https://chef-bawss.netlify.app',
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # Security headers
