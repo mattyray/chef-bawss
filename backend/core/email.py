@@ -1,30 +1,44 @@
+import re
 from datetime import datetime, timedelta
 from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 
+TIMEZONE = 'America/New_York'
+
+
+def _ics_escape(text):
+    text = str(text).replace('\\', '\\\\')
+    text = text.replace(';', '\\;').replace(',', '\\,')
+    text = re.sub(r'\r?\n', '\\\\n', text)
+    return text
+
 
 def generate_ics(event, organization, attendee_email):
     dtstart = datetime.combine(event.date, event.start_time)
-    if event.end_time:
+    if event.end_time and event.end_time > event.start_time:
         dtend = datetime.combine(event.date, event.end_time)
     else:
         dtend = dtstart + timedelta(hours=3)
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com')
+    summary = _ics_escape(event.display_name)
+    location = _ics_escape(event.location or 'TBD')
+    description = _ics_escape(f"{event.display_name} - {event.guest_count} guests")
+    org_name = _ics_escape(organization.name)
 
     return (
         "BEGIN:VCALENDAR\r\n"
         "VERSION:2.0\r\n"
-        f"PRODID:-//{organization.name}//Chef Bawss//EN\r\n"
+        f"PRODID:-//{org_name}//Chef Bawss//EN\r\n"
         "METHOD:REQUEST\r\n"
         "BEGIN:VEVENT\r\n"
         f"UID:event-{event.id}@chefbawss.com\r\n"
-        f"DTSTART:{dtstart.strftime('%Y%m%dT%H%M%S')}\r\n"
-        f"DTEND:{dtend.strftime('%Y%m%dT%H%M%S')}\r\n"
-        f"SUMMARY:{event.display_name}\r\n"
-        f"LOCATION:{event.location or 'TBD'}\r\n"
-        f"DESCRIPTION:{event.display_name} - {event.guest_count} guests\r\n"
-        f"ORGANIZER;CN={organization.name}:mailto:{from_email}\r\n"
+        f"DTSTART;TZID={TIMEZONE}:{dtstart.strftime('%Y%m%dT%H%M%S')}\r\n"
+        f"DTEND;TZID={TIMEZONE}:{dtend.strftime('%Y%m%dT%H%M%S')}\r\n"
+        f"SUMMARY:{summary}\r\n"
+        f"LOCATION:{location}\r\n"
+        f"DESCRIPTION:{description}\r\n"
+        f"ORGANIZER;CN={org_name}:mailto:{from_email}\r\n"
         f"ATTENDEE;RSVP=TRUE:mailto:{attendee_email}\r\n"
         "STATUS:CONFIRMED\r\n"
         "END:VEVENT\r\n"

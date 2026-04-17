@@ -4,6 +4,9 @@ from urllib.parse import urlparse
 
 DEBUG = False
 
+if SECRET_KEY == 'dev-only-insecure-key':
+    raise ValueError('SECRET_KEY must be set in production')
+
 INSTALLED_APPS += ['anymail']
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')

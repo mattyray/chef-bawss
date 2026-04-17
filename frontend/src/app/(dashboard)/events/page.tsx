@@ -221,7 +221,7 @@ export default function EventsPage() {
                         })}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {event.start_time} - {event.end_time}
+                        {event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

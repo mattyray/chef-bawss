@@ -95,6 +95,13 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Cannot assign inactive chef.')
         return value
 
+    def validate(self, data):
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        if start_time and end_time and end_time <= start_time:
+            raise serializers.ValidationError({'end_time': 'End time must be after start time.'})
+        return data
+
 
 class EventChefViewSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source='client.name', read_only=True)
