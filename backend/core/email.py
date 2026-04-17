@@ -1,5 +1,35 @@
-from django.core.mail import send_mail
+from datetime import datetime, timedelta
+from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
+
+
+def generate_ics(event, organization, attendee_email):
+    dtstart = datetime.combine(event.date, event.start_time)
+    if event.end_time:
+        dtend = datetime.combine(event.date, event.end_time)
+    else:
+        dtend = dtstart + timedelta(hours=3)
+
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com')
+
+    return (
+        "BEGIN:VCALENDAR\r\n"
+        "VERSION:2.0\r\n"
+        f"PRODID:-//{organization.name}//Chef Bawss//EN\r\n"
+        "METHOD:REQUEST\r\n"
+        "BEGIN:VEVENT\r\n"
+        f"UID:event-{event.id}@chefbawss.com\r\n"
+        f"DTSTART:{dtstart.strftime('%Y%m%dT%H%M%S')}\r\n"
+        f"DTEND:{dtend.strftime('%Y%m%dT%H%M%S')}\r\n"
+        f"SUMMARY:{event.display_name}\r\n"
+        f"LOCATION:{event.location or 'TBD'}\r\n"
+        f"DESCRIPTION:{event.display_name} - {event.guest_count} guests\r\n"
+        f"ORGANIZER;CN={organization.name}:mailto:{from_email}\r\n"
+        f"ATTENDEE;RSVP=TRUE:mailto:{attendee_email}\r\n"
+        "STATUS:CONFIRMED\r\n"
+        "END:VEVENT\r\n"
+        "END:VCALENDAR\r\n"
+    )
 
 
 def send_chef_invitation_email(user, organization, token):
@@ -124,14 +154,17 @@ Best,
 </html>
 """
 
-    send_mail(
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com')
+    email = EmailMessage(
         subject=subject,
-        message=message,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com'),
-        recipient_list=[chef_user.email],
-        html_message=html_message,
-        fail_silently=True,  # Don't fail the request if email fails
+        body=html_message,
+        from_email=from_email,
+        to=[chef_user.email],
     )
+    email.content_subtype = 'html'
+    ics = generate_ics(event, organization, chef_user.email)
+    email.attach('event.ics', ics, 'text/calendar; method=REQUEST')
+    email.send(fail_silently=True)
 
 
 def send_event_update_email(chef_user, event, organization, changes=None):
@@ -263,14 +296,17 @@ Best,
 </html>
 """
 
-    send_mail(
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com')
+    email = EmailMessage(
         subject=subject,
-        message=message,
-        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com'),
-        recipient_list=[client.email],
-        html_message=html_message,
-        fail_silently=True,
+        body=html_message,
+        from_email=from_email,
+        to=[client.email],
     )
+    email.content_subtype = 'html'
+    ics = generate_ics(event, organization, client.email)
+    email.attach('event.ics', ics, 'text/calendar; method=REQUEST')
+    email.send(fail_silently=True)
 
 
 def send_password_reset_email(user, token):
