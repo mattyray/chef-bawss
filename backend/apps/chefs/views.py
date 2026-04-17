@@ -1,3 +1,4 @@
+from django.db.models import Count, Q
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,13 +19,15 @@ from .serializers import (
 class ChefListView(TenantMixin, generics.ListAPIView):
     serializer_class = ChefProfileSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
-    
+
     def get_queryset(self):
         if not self.request.organization:
             return ChefProfile.objects.none()
         return ChefProfile.objects.filter(
             membership__organization=self.request.organization
-        ).select_related('membership__user')
+        ).select_related('membership__user').annotate(
+            event_count=Count('events', filter=Q(events__is_deleted=False))
+        )
 
 
 class ChefInviteView(TenantMixin, generics.CreateAPIView):
@@ -50,8 +53,10 @@ class ChefDetailView(TenantMixin, generics.RetrieveUpdateAPIView):
             return ChefProfile.objects.none()
         return ChefProfile.objects.filter(
             membership__organization=self.request.organization
-        ).select_related('membership__user')
-    
+        ).select_related('membership__user').annotate(
+            event_count=Count('events', filter=Q(events__is_deleted=False))
+        )
+
     def get_object(self):
         queryset = self.get_queryset()
         return generics.get_object_or_404(queryset, id=self.kwargs['pk'])

@@ -1,3 +1,4 @@
+from django.db.models import Count, Q, Sum
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantQuerysetMixin
@@ -14,7 +15,12 @@ class ClientListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     search_fields = ['name', 'email', 'phone']
     ordering_fields = ['name', 'created_at']
     ordering = ['name']
-    
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            event_count=Count('events', filter=Q(events__is_deleted=False))
+        )
+
     def perform_create(self, serializer):
         serializer.save(organization=self.request.organization)
 
@@ -22,9 +28,15 @@ class ClientListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
 class ClientDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Client.objects.filter(is_deleted=False)
     permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
-    
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            event_count=Count('events', filter=Q(events__is_deleted=False)),
+            total_revenue=Sum('events__client_pay', filter=Q(events__is_deleted=False, events__status='completed'))
+        )
+
     def get_serializer_class(self):
         return ClientDetailSerializer
-    
+
     def perform_destroy(self, instance):
         instance.soft_delete()

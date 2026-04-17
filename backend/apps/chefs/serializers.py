@@ -17,7 +17,7 @@ class ChefProfileSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source='user.phone', read_only=True)
     is_active = serializers.BooleanField(source='membership.is_active', read_only=True)
     has_accepted_invite = serializers.SerializerMethodField()
-    event_count = serializers.SerializerMethodField()
+    event_count = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = ChefProfile
@@ -30,9 +30,6 @@ class ChefProfileSerializer(serializers.ModelSerializer):
 
     def get_has_accepted_invite(self, obj):
         return obj.user.has_usable_password()
-
-    def get_event_count(self, obj):
-        return obj.events.filter(is_deleted=False).count()
 
 
 class ChefProfileUpdateSerializer(serializers.ModelSerializer):

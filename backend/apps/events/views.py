@@ -1,5 +1,8 @@
+import logging
 from django.db.models import Sum, Count
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -64,7 +67,7 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
                 self.request.organization
             )
         except Exception:
-            pass
+            logger.exception('Failed to send confirmation email for event %s', event.pk)
         if event.chef:
             try:
                 send_event_assignment_email(
@@ -73,7 +76,7 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
                     self.request.organization
                 )
             except Exception:
-                pass
+                logger.exception('Failed to send assignment email for event %s', event.pk)
 
     def create(self, request, *args, **kwargs):
         if not request.membership or request.membership.role != 'admin':
@@ -146,7 +149,7 @@ class EventDetailView(TenantQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
                         request.organization
                     )
         except Exception:
-            pass  # Don't fail the request if email fails
+            logger.exception('Failed to send notification email for event %s', instance.pk)
 
         return response
     

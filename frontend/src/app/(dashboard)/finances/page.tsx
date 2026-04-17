@@ -27,6 +27,7 @@ export default function FinancesPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError('');
     try {
       const [summaryData, chefData] = await Promise.all([
         api.getFinances(dateRange.start_date || undefined, dateRange.end_date || undefined),
