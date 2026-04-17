@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantQuerysetMixin, TenantMixin
 from core.permissions import IsAdmin
-from core.email import send_event_assignment_email, send_event_update_email
+from core.email import send_event_assignment_email, send_event_update_email, send_event_confirmation_email
 from .models import Event
 from .serializers import (
     EventListSerializer,
@@ -57,7 +57,14 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         event = serializer.save(organization=self.request.organization)
-        # Send email notification to chef if assigned
+        try:
+            send_event_confirmation_email(
+                event.client,
+                event,
+                self.request.organization
+            )
+        except Exception:
+            pass
         if event.chef:
             try:
                 send_event_assignment_email(
@@ -66,7 +73,7 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
                     self.request.organization
                 )
             except Exception:
-                pass  # Don't fail the request if email fails
+                pass
 
     def create(self, request, *args, **kwargs):
         if not request.membership or request.membership.role != 'admin':

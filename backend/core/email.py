@@ -208,6 +208,71 @@ Best,
     )
 
 
+def send_event_confirmation_email(client, event, organization):
+    if not client.email:
+        return
+
+    subject = f"Event Confirmed: {event.display_name} — {organization.name}"
+
+    message = f"""
+Hi {client.name},
+
+Your event with {organization.name} has been confirmed!
+
+Event: {event.display_name}
+Date: {event.date.strftime('%A, %B %d, %Y')}
+Time: {event.start_time.strftime('%I:%M %p')}
+Location: {event.location or 'TBD'}
+Guests: {event.guest_count}
+
+If you have any questions, please reach out to us directly.
+
+Best,
+{organization.name}
+"""
+
+    html_message = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .details {{ background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0; }}
+        .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Event Confirmed</h2>
+        <p>Hi {client.name},</p>
+        <p>Your event with <strong>{organization.name}</strong> has been confirmed!</p>
+        <div class="details">
+            <p><strong>Event:</strong> {event.display_name}</p>
+            <p><strong>Date:</strong> {event.date.strftime('%A, %B %d, %Y')}</p>
+            <p><strong>Time:</strong> {event.start_time.strftime('%I:%M %p')}</p>
+            <p><strong>Location:</strong> {event.location or 'TBD'}</p>
+            <p><strong>Guests:</strong> {event.guest_count}</p>
+        </div>
+        <p>If you have any questions, please reach out to us directly.</p>
+        <div class="footer">
+            <p>Sent from {organization.name} via Chef Bawss</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com'),
+        recipient_list=[client.email],
+        html_message=html_message,
+        fail_silently=True,
+    )
+
+
 def send_password_reset_email(user, token):
     """Send password reset email."""
     reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
