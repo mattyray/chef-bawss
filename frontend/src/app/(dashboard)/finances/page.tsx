@@ -132,19 +132,19 @@ export default function FinancesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Total Revenue"
-              value={`$${Number(summary.summary.revenue).toLocaleString()}`}
+              value={`$${Number(summary.summary?.revenue ?? 0).toLocaleString()}`}
             />
             <StatCard
               title="Paid to Chefs"
-              value={`$${Number(summary.summary.paid_out).toLocaleString()}`}
+              value={`$${Number(summary.summary?.paid_out ?? 0).toLocaleString()}`}
             />
             <StatCard
               title="Profit"
-              value={`$${Number(summary.summary.profit).toLocaleString()}`}
+              value={`$${Number(summary.summary?.profit ?? 0).toLocaleString()}`}
             />
             <StatCard
               title="Total Events"
-              value={summary.summary.event_count.toString()}
+              value={(summary.summary?.event_count ?? 0).toString()}
             />
           </div>
         )}

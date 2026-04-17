@@ -159,19 +159,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <StatCard
             title="Total Revenue"
-            value={`$${Number(adminData.stats.revenue).toLocaleString()}`}
+            value={`$${Number(adminData.stats?.revenue ?? 0).toLocaleString()}`}
           />
           <StatCard
             title="Paid to Chefs"
-            value={`$${Number(adminData.stats.paid_out).toLocaleString()}`}
+            value={`$${Number(adminData.stats?.paid_out ?? 0).toLocaleString()}`}
           />
           <StatCard
             title="Profit"
-            value={`$${Number(adminData.stats.profit).toLocaleString()}`}
+            value={`$${Number(adminData.stats?.profit ?? 0).toLocaleString()}`}
           />
           <StatCard
             title="Total Events"
-            value={adminData.stats.event_count.toString()}
+            value={(adminData.stats?.event_count ?? 0).toString()}
           />
         </div>
 
