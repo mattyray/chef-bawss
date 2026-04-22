@@ -25,8 +25,8 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'client__name']
-    ordering_fields = ['date', 'start_time', 'created_at']
-    ordering = ['date', 'start_time']
+    ordering_fields = ['date', 'created_at']
+    ordering = ['date']
     
     def get_queryset(self):
         qs = super().get_queryset()
