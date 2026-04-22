@@ -279,14 +279,13 @@ class DashboardView(TenantMixin, APIView):
         upcoming_events = base_qs.filter(
             status='upcoming',
             date__gte=today
-        ).select_related('client', 'chef__membership__user').order_by('date', 'start_time')[:5]
+        ).select_related('client', 'chef__membership__user').order_by('date')[:5]
 
         upcoming_data = [
             {
                 'id': e.id,
                 'display_name': e.display_name,
                 'date': e.date,
-                'start_time': e.start_time,
                 'client_name': e.client.name,
                 'chef_name': e.chef.user.full_name if e.chef else None,
                 'chef_color': e.chef.calendar_color if e.chef else '#9E9E9E',
@@ -353,15 +352,13 @@ class DashboardView(TenantMixin, APIView):
         upcoming_events = base_qs.filter(
             status='upcoming',
             date__gte=today
-        ).select_related('client').order_by('date', 'start_time')[:5]
+        ).select_related('client').order_by('date')[:5]
 
         upcoming_data = [
             {
                 'id': e.id,
                 'display_name': e.display_name,
                 'date': e.date,
-                'start_time': e.start_time,
-                'end_time': e.end_time,
                 'client_name': e.client.name,
                 'location': e.location,
                 'guest_count': e.guest_count,

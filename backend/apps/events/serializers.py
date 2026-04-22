@@ -13,7 +13,7 @@ class EventListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'id', 'display_name', 'name', 'date', 'start_time', 'end_time',
+            'id', 'display_name', 'name', 'date',
             'client', 'client_name', 'chef', 'chef_name', 'chef_color',
             'guest_count', 'status', 'client_pay'
         ]
@@ -44,7 +44,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'id', 'display_name', 'name', 'date', 'start_time', 'end_time',
+            'id', 'display_name', 'name', 'date',
             'client', 'client_name', 'client_email', 'client_phone', 'client_allergies',
             'chef', 'chef_name', 'chef_email', 'chef_phone', 'chef_color',
             'location', 'guest_count', 'allergies', 'menu_notes',
@@ -71,7 +71,7 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'client', 'chef', 'name', 'date', 'start_time', 'end_time',
+            'client', 'chef', 'name', 'date',
             'location', 'guest_count', 'allergies', 'menu_notes',
             'client_pay', 'chef_pay', 'deposit_amount', 'deposit_received', 'payment_received',
             'internal_notes', 'chef_notes', 'status'
@@ -96,10 +96,6 @@ class EventCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
-        if start_time and end_time and end_time <= start_time:
-            raise serializers.ValidationError({'end_time': 'End time must be after start time.'})
         return data
 
 
@@ -113,13 +109,13 @@ class EventChefViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'id', 'display_name', 'name', 'date', 'start_time', 'end_time',
+            'id', 'display_name', 'name', 'date',
             'client_name', 'client_email', 'client_phone', 'client_allergies',
             'location', 'guest_count', 'allergies', 'menu_notes',
             'chef_pay', 'chef_notes', 'status'
         ]
         read_only_fields = [
-            'id', 'display_name', 'name', 'date', 'start_time', 'end_time',
+            'id', 'display_name', 'name', 'date',
             'client_name', 'client_email', 'client_phone', 'client_allergies',
             'location', 'guest_count', 'allergies', 'menu_notes',
             'chef_pay', 'status'
@@ -138,11 +134,9 @@ class EventCalendarSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'start', 'end', 'color', 'extendedProps']
     
     def get_start(self, obj):
-        return f'{obj.date}T{obj.start_time}'
-    
+        return str(obj.date)
+
     def get_end(self, obj):
-        if obj.end_time:
-            return f'{obj.date}T{obj.end_time}'
         return None
     
     def get_color(self, obj):

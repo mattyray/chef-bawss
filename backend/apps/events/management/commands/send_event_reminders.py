@@ -36,7 +36,6 @@ class Command(BaseCommand):
     <p><strong>Event:</strong> {event.display_name}</p>
     <p><strong>Client:</strong> {event.client.name}</p>
     <p><strong>Date:</strong> {event.date.strftime('%A, %B %d, %Y')}</p>
-    <p><strong>Time:</strong> {event.start_time.strftime('%I:%M %p')}</p>
     <p><strong>Location:</strong> {event.location or 'TBD'}</p>
     <p><strong>Guests:</strong> {event.guest_count}</p>
 </div>

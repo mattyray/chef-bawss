@@ -34,8 +34,7 @@ function AdminEventCard({ event }: { event: DashboardEvent }) {
           )}
         </div>
         <div className="mt-2 text-sm text-gray-500">
-          <p>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-          {event.start_time && <p>{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</p>}
+          <p>{new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
         </div>
         {event.client_pay && (
           <p className="mt-2 text-sm font-medium text-gray-900">
@@ -65,9 +64,8 @@ function ChefEventCard({ event }: { event: DashboardEvent }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="text-sm text-gray-500">
             <p className="font-medium text-gray-700">
-              {new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
             </p>
-            {event.start_time && <p>{event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}</p>}
           </div>
           {event.guest_count && (
             <div className="text-right text-sm">

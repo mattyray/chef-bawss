@@ -8,16 +8,6 @@ import { formatPhoneNumber } from '@/lib/utils';
 import { Event } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-function formatTime(time: string | null): string {
-  if (!time) return '-';
-  const [h, m] = time.split(':');
-  let hour = parseInt(h);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-  return `${hour}:${m} ${period}`;
-}
-
 export default function ChefEventDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -113,26 +103,17 @@ export default function ChefEventDetailPage() {
           </div>
 
           <div className="p-4 sm:p-6 space-y-6">
-            {/* Date, Time & Location */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                <p className="mt-1 text-lg font-medium text-gray-900">
-                  {new Date(event.date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Time</h3>
-                <p className="mt-1 text-lg font-medium text-gray-900">
-                  {formatTime(event.start_time)}
-                  {event.end_time && ` - ${formatTime(event.end_time)}`}
-                </p>
-              </div>
+            {/* Date & Location */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Date</h3>
+              <p className="mt-1 text-lg font-medium text-gray-900">
+                {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
             </div>
 
             <div>

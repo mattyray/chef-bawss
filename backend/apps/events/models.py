@@ -23,8 +23,6 @@ class Event(models.Model):
     
     name = models.CharField(max_length=200, blank=True)
     date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField(null=True, blank=True)
     
     location = models.TextField(blank=True)
     guest_count = models.PositiveIntegerField()
@@ -49,7 +47,7 @@ class Event(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['date', 'start_time']
+        ordering = ['date']
     
     def __str__(self):
         return self.display_name

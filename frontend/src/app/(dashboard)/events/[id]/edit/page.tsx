@@ -8,37 +8,6 @@ import { Client, Chef, Event } from '@/types';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { SearchableSelect, SearchableSelectOption } from '@/components/SearchableSelect';
 
-// Time picker options
-const hours = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-const minutes = ['00', '15', '30', '45'];
-const periods = ['AM', 'PM'];
-
-// Convert 12-hour to 24-hour format for API
-function to24Hour(hour: string, minute: string, period: string): string {
-  let h = parseInt(hour);
-  if (period === 'AM') {
-    if (h === 12) h = 0;
-  } else {
-    if (h !== 12) h += 12;
-  }
-  return `${h.toString().padStart(2, '0')}:${minute}`;
-}
-
-// Convert 24-hour to 12-hour parts
-function from24Hour(time: string | null): { hour: string; minute: string; period: string } {
-  if (!time) return { hour: '', minute: '00', period: 'PM' };
-  const [h, m] = time.split(':');
-  let hour = parseInt(h);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  if (hour === 0) hour = 12;
-  else if (hour > 12) hour -= 12;
-  // Round minute to nearest 15
-  const mins = parseInt(m);
-  const roundedMin = Math.round(mins / 15) * 15;
-  const minute = roundedMin === 60 ? '00' : roundedMin.toString().padStart(2, '0');
-  return { hour: hour.toString(), minute, period };
-}
-
 export default function EditEventPage() {
   const params = useParams();
   const router = useRouter();
@@ -53,12 +22,6 @@ export default function EditEventPage() {
     chef: '',
     display_name: '',
     date: '',
-    startHour: '',
-    startMinute: '00',
-    startPeriod: 'PM',
-    endHour: '',
-    endMinute: '00',
-    endPeriod: 'PM',
     location: '',
     guest_count: '',
     client_pay: '',
@@ -82,20 +45,11 @@ export default function EditEventPage() {
           api.getChefs(),
         ]);
 
-        const startTime = from24Hour(eventData.start_time);
-        const endTime = from24Hour(eventData.end_time);
-
         setForm({
           client: eventData.client.toString(),
           chef: eventData.chef?.toString() || '',
           display_name: eventData.name || '',
           date: eventData.date,
-          startHour: startTime.hour,
-          startMinute: startTime.minute,
-          startPeriod: startTime.period,
-          endHour: endTime.hour,
-          endMinute: endTime.minute,
-          endPeriod: endTime.period,
           location: eventData.location || '',
           guest_count: eventData.guest_count?.toString() || '',
           client_pay: eventData.client_pay || '',
@@ -137,16 +91,11 @@ export default function EditEventPage() {
     setLoading(true);
 
     try {
-      const start_time = form.startHour ? to24Hour(form.startHour, form.startMinute, form.startPeriod) : '';
-      const end_time = form.endHour ? to24Hour(form.endHour, form.endMinute, form.endPeriod) : '';
-
       await api.updateEvent(eventId, {
         client: Number(form.client),
         chef: form.chef ? Number(form.chef) : null,
         name: form.display_name,
         date: form.date,
-        start_time,
-        end_time: end_time || null,
         location: form.location,
         guest_count: form.guest_count ? Number(form.guest_count) : undefined,
         client_pay: form.client_pay ? form.client_pay : undefined,
@@ -262,81 +211,6 @@ export default function EditEventPage() {
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Time *
-                </label>
-                <div className="flex gap-1">
-                  <select
-                    required
-                    value={form.startHour}
-                    onChange={(e) => setForm({ ...form, startHour: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    <option value="">--</option>
-                    {hours.map((h) => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={form.startMinute}
-                    onChange={(e) => setForm({ ...form, startMinute: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    {minutes.map((m) => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={form.startPeriod}
-                    onChange={(e) => setForm({ ...form, startPeriod: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    {periods.map((p) => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  End Time
-                </label>
-                <div className="flex gap-1">
-                  <select
-                    value={form.endHour}
-                    onChange={(e) => setForm({ ...form, endHour: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    <option value="">--</option>
-                    {hours.map((h) => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={form.endMinute}
-                    onChange={(e) => setForm({ ...form, endMinute: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    {minutes.map((m) => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={form.endPeriod}
-                    onChange={(e) => setForm({ ...form, endPeriod: e.target.value })}
-                    className="flex-1 min-w-0 px-1 sm:px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    {periods.map((p) => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
             </div>
 
             <div>

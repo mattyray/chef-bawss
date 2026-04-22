@@ -14,11 +14,9 @@ def _ics_escape(text):
 
 
 def generate_ics(event, organization, attendee_email):
-    dtstart = datetime.combine(event.date, event.start_time)
-    if event.end_time and event.end_time > event.start_time:
-        dtend = datetime.combine(event.date, event.end_time)
-    else:
-        dtend = dtstart + timedelta(hours=3)
+    from datetime import time
+    dtstart = datetime.combine(event.date, time(9, 0))
+    dtend = dtstart + timedelta(hours=3)
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@chefbawss.com')
     summary = _ics_escape(event.display_name)
@@ -122,7 +120,6 @@ You've been assigned to a new event with {organization.name}!
 Event: {event.display_name}
 Client: {event.client.name}
 Date: {event.date.strftime('%A, %B %d, %Y')}
-Time: {event.start_time.strftime('%I:%M %p')}
 Location: {event.location or 'TBD'}
 Guests: {event.guest_count}
 Your Pay: ${event.chef_pay or 'TBD'}
@@ -154,7 +151,6 @@ Best,
             <p><strong>Event:</strong> {event.display_name}</p>
             <p><strong>Client:</strong> {event.client.name}</p>
             <p><strong>Date:</strong> {event.date.strftime('%A, %B %d, %Y')}</p>
-            <p><strong>Time:</strong> {event.start_time.strftime('%I:%M %p')}</p>
             <p><strong>Location:</strong> {event.location or 'TBD'}</p>
             <p><strong>Guests:</strong> {event.guest_count}</p>
             <p><strong>Your Pay:</strong> ${event.chef_pay or 'TBD'}</p>
@@ -199,7 +195,6 @@ An event you're assigned to has been updated.{changes_text}
 Event: {event.display_name}
 Client: {event.client.name}
 Date: {event.date.strftime('%A, %B %d, %Y')}
-Time: {event.start_time.strftime('%I:%M %p')}
 Location: {event.location or 'TBD'}
 Guests: {event.guest_count}
 
@@ -232,7 +227,6 @@ Best,
             <p><strong>Event:</strong> {event.display_name}</p>
             <p><strong>Client:</strong> {event.client.name}</p>
             <p><strong>Date:</strong> {event.date.strftime('%A, %B %d, %Y')}</p>
-            <p><strong>Time:</strong> {event.start_time.strftime('%I:%M %p')}</p>
             <p><strong>Location:</strong> {event.location or 'TBD'}</p>
             <p><strong>Guests:</strong> {event.guest_count}</p>
         </div>

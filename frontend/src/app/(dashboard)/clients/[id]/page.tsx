@@ -242,7 +242,7 @@ export default function ClientDetailPage() {
                         <div>
                           <h3 className="font-medium text-gray-900">{event.display_name}</h3>
                           <p className="text-sm text-gray-500">
-                            {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1">
@@ -290,7 +290,7 @@ export default function ClientDetailPage() {
                           </Link>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900">
-                          {new Date(event.date).toLocaleDateString()}
+                          {new Date(event.date + 'T00:00:00').toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[event.status]}`}>

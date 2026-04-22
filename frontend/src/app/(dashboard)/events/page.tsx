@@ -143,8 +143,7 @@ export default function EventsPage() {
                       <h3 className="font-medium text-gray-900 truncate">{event.display_name}</h3>
                       <p className="text-sm text-gray-500">{event.client_name}</p>
                       <p className="text-sm text-gray-500">
-                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        {event.start_time && ` at ${event.start_time}`}
+                        {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1 ml-2">
@@ -180,7 +179,7 @@ export default function EventsPage() {
                     Client
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date & Time
+                    Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -213,15 +212,12 @@ export default function EventsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(event.date).toLocaleDateString('en-US', {
+                        {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
                           weekday: 'short',
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
                         })}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {event.start_time}{event.end_time ? ` - ${event.end_time}` : ''}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

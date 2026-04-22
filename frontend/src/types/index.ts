@@ -69,8 +69,6 @@ export interface Event {
   display_name: string;
   name: string;
   date: string;
-  start_time: string;
-  end_time: string | null;
   client: number;
   client_name: string;
   client_email?: string;
@@ -138,8 +136,6 @@ export interface DashboardEvent {
   id: number;
   display_name: string;
   date: string;
-  start_time?: string;
-  end_time?: string;
   client_name: string;
   chef_name?: string | null;
   chef_color?: string;
