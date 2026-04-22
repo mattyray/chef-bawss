@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from core.mixins import TenantQuerysetMixin, TenantMixin
 from core.permissions import IsAdmin
-from core.email import send_event_assignment_email, send_event_update_email, send_event_confirmation_email
+from core.email import send_event_assignment_email, send_event_update_email
 from .models import Event
 from .serializers import (
     EventListSerializer,
@@ -60,14 +60,6 @@ class EventListCreateView(TenantQuerysetMixin, generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         event = serializer.save(organization=self.request.organization)
-        try:
-            send_event_confirmation_email(
-                event.client,
-                event,
-                self.request.organization
-            )
-        except Exception:
-            logger.exception('Failed to send confirmation email for event %s', event.pk)
         if event.chef:
             try:
                 send_event_assignment_email(
