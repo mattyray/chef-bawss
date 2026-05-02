@@ -18,3 +18,4 @@ urlpatterns = [
     path('<int:pk>/activate/', ChefActivateView.as_view(), name='chef_activate'),
     path('<int:pk>/resend-invite/', ChefResendInviteView.as_view(), name='chef_resend_invite'),
 ]
+
